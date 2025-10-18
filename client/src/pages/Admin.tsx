@@ -4,9 +4,12 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Lock, Mail, LogOut, ExternalLink, Calendar, User as UserIcon, Globe, Check, Trash2, Filter, MessageSquare, Phone } from "lucide-react";
+import { Lock, Mail, LogOut, ExternalLink, Calendar, User as UserIcon, Globe, Check, Trash2, Filter, MessageSquare, Phone, Folder, Image, Plus, Edit, X } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -19,6 +22,18 @@ export default function Admin() {
   const [loginError, setLoginError] = useState("");
   const [filter, setFilter] = useState<"all" | "contacted" | "not_contacted">("all");
   const [messageFilter, setMessageFilter] = useState<"all" | "nuevo" | "leído" | "respondido">("all");
+  const [showProjectForm, setShowProjectForm] = useState(false);
+  const [editingProject, setEditingProject] = useState<any | null>(null);
+  const [projectForm, setProjectForm] = useState({
+    title: "",
+    category: "",
+    description: "",
+    externalLink: "",
+    displayOrder: 0,
+    isActive: true,
+  });
+  const [projectImage, setProjectImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   // Login mutation
   const loginMutation = useMutation({
@@ -66,6 +81,21 @@ export default function Admin() {
         headers: { 'Content-Type': 'application/json' },
       });
       if (!res.ok) throw new Error('Failed to fetch messages');
+      return await res.json();
+    },
+    enabled: isAuthenticated,
+  });
+
+  // Fetch all projects (only when authenticated)
+  const { data: projectsList = [], isLoading: projectsLoading } = useQuery<any[]>({
+    queryKey: ['/api/admin/projects'],
+    queryFn: async () => {
+      const res = await fetch('/api/admin/projects', {
+        method: 'POST',
+        body: JSON.stringify(credentials),
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!res.ok) throw new Error('Failed to fetch projects');
       return await res.json();
     },
     enabled: isAuthenticated,
@@ -135,6 +165,62 @@ export default function Admin() {
     },
   });
 
+  // Create project mutation
+  const createProjectMutation = useMutation({
+    mutationFn: async (formData: FormData) => {
+      formData.append('email', credentials.email);
+      formData.append('password', credentials.password);
+      
+      const res = await fetch('/api/admin/projects/create', {
+        method: 'POST',
+        body: formData,
+      });
+      if (!res.ok) throw new Error('Failed to create project');
+      return await res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/projects'] });
+      resetProjectForm();
+      setShowProjectForm(false);
+    },
+  });
+
+  // Update project mutation
+  const updateProjectMutation = useMutation({
+    mutationFn: async ({ id, formData }: { id: number; formData: FormData }) => {
+      formData.append('email', credentials.email);
+      formData.append('password', credentials.password);
+      
+      const res = await fetch(`/api/admin/projects/${id}`, {
+        method: 'PATCH',
+        body: formData,
+      });
+      if (!res.ok) throw new Error('Failed to update project');
+      return await res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/projects'] });
+      resetProjectForm();
+      setShowProjectForm(false);
+    },
+  });
+
+  // Delete project mutation
+  const deleteProjectMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const res = await fetch(`/api/admin/projects/${id}`, {
+        method: 'DELETE',
+        body: JSON.stringify(credentials),
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!res.ok) throw new Error('Failed to delete');
+      return await res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/projects'] });
+    },
+  });
+
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     await loginMutation.mutateAsync(credentials);
@@ -143,6 +229,68 @@ export default function Admin() {
   const handleLogout = () => {
     setIsAuthenticated(false);
     setCredentials({ email: "", password: "" });
+  };
+
+  const resetProjectForm = () => {
+    setProjectForm({
+      title: "",
+      category: "",
+      description: "",
+      externalLink: "",
+      displayOrder: 0,
+      isActive: true,
+    });
+    setProjectImage(null);
+    setImagePreview(null);
+    setEditingProject(null);
+  };
+
+  const handleEditProject = (project: any) => {
+    setEditingProject(project);
+    setProjectForm({
+      title: project.title,
+      category: project.category,
+      description: project.description,
+      externalLink: project.externalLink || "",
+      displayOrder: project.displayOrder,
+      isActive: project.isActive === 1,
+    });
+    setImagePreview(project.imagePath);
+    setShowProjectForm(true);
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setProjectImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleProjectSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const formData = new FormData();
+    formData.append('title', projectForm.title);
+    formData.append('category', projectForm.category);
+    formData.append('description', projectForm.description);
+    formData.append('externalLink', projectForm.externalLink);
+    formData.append('displayOrder', projectForm.displayOrder.toString());
+    formData.append('isActive', projectForm.isActive ? '1' : '0');
+    
+    if (projectImage) {
+      formData.append('image', projectImage);
+    }
+
+    if (editingProject) {
+      await updateProjectMutation.mutateAsync({ id: editingProject.id, formData });
+    } else {
+      await createProjectMutation.mutateAsync(formData);
+    }
   };
 
   // Filter analyses
@@ -251,7 +399,7 @@ export default function Admin() {
           </div>
 
           <Tabs defaultValue="analyses" className="w-full">
-            <TabsList className="grid w-full max-w-md mb-8" style={{ gridTemplateColumns: '1fr 1fr' }}>
+            <TabsList className="grid w-full max-w-2xl mb-8" style={{ gridTemplateColumns: '1fr 1fr 1fr' }}>
               <TabsTrigger value="analyses" data-testid="tab-analyses">
                 <Globe className="w-4 h-4 mr-2" />
                 Análisis SEO ({analyses.length})
@@ -259,6 +407,10 @@ export default function Admin() {
               <TabsTrigger value="messages" data-testid="tab-messages">
                 <MessageSquare className="w-4 h-4 mr-2" />
                 Mensajes ({messages.length})
+              </TabsTrigger>
+              <TabsTrigger value="projects" data-testid="tab-projects">
+                <Folder className="w-4 h-4 mr-2" />
+                Proyectos ({projectsList.length})
               </TabsTrigger>
             </TabsList>
 
@@ -651,6 +803,284 @@ export default function Admin() {
                               }}
                               disabled={deleteMessageMutation.isPending}
                               data-testid={`button-delete-message-${message.id}`}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="projects" className="space-y-8">
+              {/* Project Stats */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Card className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">Total proyectos</p>
+                      <p className="text-3xl font-display font-bold">{projectsList.length}</p>
+                    </div>
+                    <div className="p-3 bg-primary/10 rounded-lg">
+                      <Folder className="w-6 h-6 text-primary" />
+                    </div>
+                  </div>
+                </Card>
+                <Card className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">Activos</p>
+                      <p className="text-3xl font-display font-bold">
+                        {projectsList.filter((p: any) => p.isActive === 1).length}
+                      </p>
+                    </div>
+                    <div className="p-3 bg-green-500/10 rounded-lg">
+                      <Check className="w-6 h-6 text-green-500" />
+                    </div>
+                  </div>
+                </Card>
+                <Card className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">Inactivos</p>
+                      <p className="text-3xl font-display font-bold">
+                        {projectsList.filter((p: any) => p.isActive === 0).length}
+                      </p>
+                    </div>
+                    <div className="p-3 bg-gray-500/10 rounded-lg">
+                      <X className="w-6 h-6 text-gray-500" />
+                    </div>
+                  </div>
+                </Card>
+              </div>
+
+              {/* Add Project Button */}
+              <div className="flex justify-between items-center">
+                <h2 className="font-display text-2xl font-bold">Gestión de proyectos</h2>
+                <Button
+                  onClick={() => {
+                    resetProjectForm();
+                    setShowProjectForm(!showProjectForm);
+                  }}
+                  data-testid="button-add-project"
+                >
+                  {showProjectForm ? (
+                    <>
+                      <X className="w-4 h-4 mr-2" />
+                      Cancelar
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Nuevo proyecto
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              {/* Project Form */}
+              {showProjectForm && (
+                <Card className="p-6">
+                  <h3 className="font-display text-xl font-bold mb-6">
+                    {editingProject ? 'Editar proyecto' : 'Nuevo proyecto'}
+                  </h3>
+                  <form onSubmit={handleProjectSubmit} className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="title">Título *</Label>
+                        <Input
+                          id="title"
+                          value={projectForm.title}
+                          onChange={(e) => setProjectForm({ ...projectForm, title: e.target.value })}
+                          required
+                          data-testid="input-project-title"
+                          placeholder="Nombre del proyecto"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="category">Categoría *</Label>
+                        <Input
+                          id="category"
+                          value={projectForm.category}
+                          onChange={(e) => setProjectForm({ ...projectForm, category: e.target.value })}
+                          required
+                          data-testid="input-project-category"
+                          placeholder="Ej: Diseño Web, E-commerce, etc."
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="description">Descripción *</Label>
+                      <Textarea
+                        id="description"
+                        value={projectForm.description}
+                        onChange={(e) => setProjectForm({ ...projectForm, description: e.target.value })}
+                        required
+                        data-testid="input-project-description"
+                        placeholder="Describe el proyecto..."
+                        rows={3}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="externalLink">Link externo (opcional)</Label>
+                        <Input
+                          id="externalLink"
+                          type="url"
+                          value={projectForm.externalLink}
+                          onChange={(e) => setProjectForm({ ...projectForm, externalLink: e.target.value })}
+                          data-testid="input-project-link"
+                          placeholder="https://ejemplo.com"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="displayOrder">Orden de visualización</Label>
+                        <Input
+                          id="displayOrder"
+                          type="number"
+                          value={projectForm.displayOrder}
+                          onChange={(e) => setProjectForm({ ...projectForm, displayOrder: parseInt(e.target.value) || 0 })}
+                          data-testid="input-project-order"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="image">
+                        Imagen {editingProject ? '(opcional - dejar vacío para mantener actual)' : '*'}
+                      </Label>
+                      <Input
+                        id="image"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        required={!editingProject}
+                        data-testid="input-project-image"
+                      />
+                      {imagePreview && (
+                        <div className="mt-4">
+                          <p className="text-sm text-muted-foreground mb-2">Vista previa:</p>
+                          <img
+                            src={imagePreview}
+                            alt="Preview"
+                            className="w-full max-w-md rounded-lg border"
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id="isActive"
+                        checked={projectForm.isActive}
+                        onCheckedChange={(checked) => setProjectForm({ ...projectForm, isActive: checked })}
+                        data-testid="switch-project-active"
+                      />
+                      <Label htmlFor="isActive">Proyecto activo (visible en la web)</Label>
+                    </div>
+
+                    <div className="flex gap-3">
+                      <Button
+                        type="submit"
+                        disabled={createProjectMutation.isPending || updateProjectMutation.isPending}
+                        data-testid="button-submit-project"
+                      >
+                        {createProjectMutation.isPending || updateProjectMutation.isPending
+                          ? 'Guardando...'
+                          : editingProject
+                          ? 'Actualizar proyecto'
+                          : 'Crear proyecto'}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          resetProjectForm();
+                          setShowProjectForm(false);
+                        }}
+                        data-testid="button-cancel-project"
+                      >
+                        Cancelar
+                      </Button>
+                    </div>
+                  </form>
+                </Card>
+              )}
+
+              {/* Projects List */}
+              <div className="space-y-4">
+                {projectsLoading ? (
+                  <div className="text-center py-12">
+                    <p className="text-muted-foreground">Cargando proyectos...</p>
+                  </div>
+                ) : projectsList.length === 0 ? (
+                  <Card className="p-12 text-center">
+                    <p className="text-muted-foreground">No hay proyectos todavía</p>
+                  </Card>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {projectsList.map((project: any) => (
+                      <Card key={project.id} className="overflow-hidden hover-elevate">
+                        <div className="aspect-video relative bg-muted">
+                          <img
+                            src={project.imagePath}
+                            alt={project.title}
+                            className="w-full h-full object-cover"
+                          />
+                          {project.isActive === 0 && (
+                            <div className="absolute top-2 right-2">
+                              <Badge variant="outline">Inactivo</Badge>
+                            </div>
+                          )}
+                        </div>
+                        <div className="p-4 space-y-3">
+                          <div>
+                            <h3 className="font-display font-bold text-lg mb-1">
+                              {project.title}
+                            </h3>
+                            <Badge variant="secondary">{project.category}</Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground line-clamp-2">
+                            {project.description}
+                          </p>
+                          {project.externalLink && (
+                            <a
+                              href={project.externalLink}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-sm text-primary hover:underline flex items-center gap-1"
+                            >
+                              <ExternalLink className="w-3 h-3" />
+                              Ver proyecto
+                            </a>
+                          )}
+                          <div className="flex gap-2 pt-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleEditProject(project)}
+                              data-testid={`button-edit-project-${project.id}`}
+                            >
+                              <Edit className="w-4 h-4 mr-2" />
+                              Editar
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                if (confirm(`¿Eliminar proyecto "${project.title}"?`)) {
+                                  deleteProjectMutation.mutate(project.id);
+                                }
+                              }}
+                              disabled={deleteProjectMutation.isPending}
+                              data-testid={`button-delete-project-${project.id}`}
                             >
                               <Trash2 className="w-4 h-4" />
                             </Button>
