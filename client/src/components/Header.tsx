@@ -1,6 +1,5 @@
-import { useState } from "react";
-import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import MenuIcon from "@/components/MenuIcon";
 
 interface HeaderProps {
   onMenuToggle: () => void;
@@ -76,22 +75,7 @@ export default function Header({ onMenuToggle, isMenuOpen }: HeaderProps) {
           data-testid="button-menu-toggle"
           aria-label={isMenuOpen ? "Cerrar menú" : "Abrir menú"}
         >
-          <div className="relative w-6 h-6">
-            <Menu
-              className={`absolute inset-0 transition-all duration-300 ${
-                isMenuOpen
-                  ? "opacity-0 rotate-90 scale-0"
-                  : "opacity-100 rotate-0 scale-100"
-              }`}
-            />
-            <X
-              className={`absolute inset-0 transition-all duration-300 ${
-                isMenuOpen
-                  ? "opacity-100 rotate-0 scale-100"
-                  : "opacity-0 -rotate-90 scale-0"
-              }`}
-            />
-          </div>
+          <MenuIcon isOpen={isMenuOpen} />
         </Button>
       </div>
     </header>

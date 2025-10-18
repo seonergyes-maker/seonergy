@@ -1,0 +1,196 @@
+Metodología
+
+Nuestro proceso
+Un enfoque estructurado que garantiza resultados excepcionales en cada proyecto.
+
+01 · Investigación
+
+Titular corto (timeline): Investigación & Estrategia
+Resumen: Analizamos tu negocio, audiencia y competencia para crear una estrategia sólida y efectiva.
+
+Qué hacemos
+
+Entrevista inicial y definición de objetivos (ventas, leads, visibilidad local).
+
+Auditoría rápida: técnica (SEO/velocidad), UX y analítica.
+
+Research de mercado y competidores (Yecla y comarca + referentes del sector).
+
+Mapa de contenidos y arquitectura propuesta (si aplica).
+
+Plan de medición (eventos, conversiones, Consent Mode v2).
+
+Entregables
+
+Documento de estrategia (1–2 páginas claras).
+
+Árbol de navegación y esquema de páginas/landings.
+
+Lista priorizada de oportunidades (impacto vs esfuerzo).
+
+Criterios de “hecho”
+
+Objetivos SMART definidos.
+
+Aprobación de arquitectura y prioridades.
+
+Brief cerrado y accesos (hosting/CMS/Analytics) si procede.
+
+Duración estimada: 2–5 días laborables
+Herramientas: Brief, Search Console/GA4 (si hay), Lighthouse, Screaming Frog, hojas de cálculo.
+KPI de salida: lista de hipótesis y backlog priorizado (v1).
+
+02 · Diseño
+
+Titular corto (timeline): UX/UI que convierte
+Resumen: Creamos wireframes y prototipos que definen una experiencia clara y orientada a conversión.
+
+Qué hacemos
+
+Wireframes low-fi (estructura, jerarquía y CTAs).
+
+Prototipo visual (look & feel, componentes, estados).
+
+Copy base orientado a beneficios, objeciones y prueba social.
+
+Preparación de assets (iconos, imágenes, estilos).
+
+Entregables
+
+Prototipo navegable (mobile/desktop).
+
+Guía breve de componentes y estilos.
+
+Copy inicial por sección (titulares, subtítulos, CTAs).
+
+Criterios de “hecho”
+
+Aprobación del prototipo y copy clave.
+
+Componentes críticos definidos (cards, formularios, tablas de precios).
+
+Duración estimada: 4–7 días
+Herramientas: Figma/Adobe XD, biblioteca de componentes, banco de imágenes.
+KPI de salida: tasa de comprensión en test de 5 segundos (interno) ≥ 80%.
+
+03 · Desarrollo
+
+Titular corto (timeline): Código limpio y escalable
+Resumen: Construimos tu proyecto con buenas prácticas, rendimiento y medición listos desde el día uno.
+
+Qué hacemos
+
+Maquetación semántica (HTML5/ARIA) y Tailwind/tema ligero (si WP).
+
+Integración CMS o headless (según alcance).
+
+SEO on-page técnico: titles, metas, schema, breadcrumbs, canónicos.
+
+Core Web Vitals: imágenes (WebP/AVIF), lazy, fuentes swap.
+
+Formularios con validación + eventos GA4 (generate_lead, contact_click).
+
+Consent Mode v2 y CMP compatibles RGPD.
+
+Entregables
+
+Sitio funcional en entorno de pruebas (staging).
+
+Receta GTM/GA4 (nombres de eventos, triggers y conversiones).
+
+Documentación corta de uso/edición.
+
+Criterios de “hecho”
+
+Lighthouse móvil: Performance/SEO/Accesibilidad ≥ 90 (staging).
+
+Validación de datos estructurados sin errores críticos.
+
+Tracking funcionando con consentimiento denied por defecto.
+
+Duración estimada: 1–3 semanas (según número de páginas/funciones)
+Herramientas: VS Code, Git, WordPress/Next.js, GTM, GA4, Tag Assistant.
+KPI de salida: LCP ≤ 2.5s · INP ≤ 200ms · CLS ≤ 0.1 en páginas clave.
+
+04 · Lanzamiento
+
+Titular corto (timeline): Publicación & Optimización
+Resumen: Desplegamos, optimizamos y te acompañamos en el crecimiento continuo.
+
+Qué hacemos
+
+Plan de publicación (DNS/hosting/SSL) y checklist de go-live.
+
+Redirecciones 301 (si hay migración), verificación Search Console.
+
+Configuración final de Analytics/Ads y objetivos.
+
+Monitor de errores, core vitals y eventos de conversión.
+
+Ajustes rápidos post-lanzamiento (copy, CTAs, velocidad).
+
+Entregables
+
+Sitio en producción con certificados activos.
+
+Informe de lanzamiento (qué se publicó, métricas iniciales).
+
+Calendario de micro-mejoras 30/60/90 días.
+
+Criterios de “hecho”
+
+Indexación correcta de páginas clave.
+
+Conversiones recogidas en GA4 y, si aplica, en Google Ads/Meta.
+
+Cero errores 4xx/5xx en navegación principal.
+
+Duración estimada: 2–4 días
+Herramientas: Panel de hosting, Search Console, PageSpeed, Tag Assistant.
+KPI de salida: 100% navegación principal sin errores · conversiones registradas.
+
+05 · Crecimiento (opcional, continuo)
+
+Titular corto (timeline): SEO & Ads en ciclo de mejora
+Resumen: Iteramos con datos reales: contenidos, SEO local, tests A/B y optimización de campañas.
+
+Qué hacemos
+
+Roadmap mensual SEO (on-page, contenidos locales, enlaces citacionales).
+
+Mantenimiento y mejoras de rendimiento.
+
+Campañas Google & Meta orientadas a CPA/ROAS con tests en landings.
+
+Informes claros con próximos pasos y priorización.
+
+Entregables
+
+Informe mensual con resultados y tareas.
+
+Nuevos contenidos/landing tests (según plan).
+
+Ajustes técnicos continuos (seguridad y velocidad).
+
+Criterios de “hecho”
+
+Objetivos mensuales cumplidos o plan de acción correctivo.
+
+Backlog actualizado con impacto/efuerzo y fechas.
+
+Cadencia sugerida: mensual (revisión cada 4 semanas)
+KPI de salida: leads cualificados, CPA/ROAS, visibilidad local (GBR), CWV sostenidos.
+
+Micro-FAQ (debajo del timeline)
+
+¿Qué necesitas de mí? Aprobaciones rápidas y material de marca (logo, fotos), más acceso a Analytics/hosting si aplica.
+
+¿Hay permanencia? No. En crecimiento, mes a mes.
+
+¿Garantizáis rankings? Garantizamos ejecución excelente y mejora de KPIs; los rankings dependen del mercado y la competencia.
+
+CTA final
+
+¿Listo para empezar?
+Solicita tu propuesta con plazos y precio cerrados en 24 h.
+Botones: Pide presupuesto · Analiza tu web ahora

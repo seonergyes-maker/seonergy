@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { Mail, Instagram, ArrowUpRight, MessageCircle } from "lucide-react";
+import { Mail, Instagram, ArrowUpRight, MessageCircle, X } from "lucide-react";
 import { Link } from "wouter";
+import { Button } from "@/components/ui/button";
 
 interface FullscreenMenuProps {
   isOpen: boolean;
@@ -92,6 +93,23 @@ export default function FullscreenMenu({ isOpen, onClose }: FullscreenMenuProps)
             exit="exit"
             className="fixed inset-0 z-50 overflow-y-auto"
           >
+            {/* Close button */}
+            <motion.div
+              variants={itemVariants}
+              className="fixed top-6 right-6 md:top-8 md:right-12 lg:right-20 xl:right-32 z-50"
+            >
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={onClose}
+                className="w-12 h-12 rounded-full bg-card/50 backdrop-blur-md hover:bg-card border border-border"
+                data-testid="button-close-menu"
+                aria-label="Cerrar menú"
+              >
+                <X className="w-6 h-6" />
+              </Button>
+            </motion.div>
+
             <div className="min-h-full w-full flex flex-col lg:flex-row items-start justify-between px-6 py-24 md:px-12 lg:px-20 xl:px-32 gap-12">
               
               {/* Main Navigation */}
