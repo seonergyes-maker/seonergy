@@ -1,0 +1,232 @@
+/servicios/diseno-web/ — Diseño Web
+
+Meta title (≤60): Diseño web profesional para comercios | Seonergy
+Meta description (≤155): Webs rápidas y enfocadas a ventas. Diseño web para pymes y comercios: responsive, SEO on-page y lista para anunciar. Pide presupuesto.
+
+Hero
+
+H1: Diseño web que convierte visitas en clientes
+Sub: Sitios rápidos, claros y preparados para SEO y anuncios desde el día uno.
+CTA primario: Pide presupuesto
+CTA secundario: Ver ejemplos
+
+Para quién es
+
+Comercios y servicios que necesitan más llamadas y formularios.
+
+Pymes con webs desactualizadas que quieren subir en Google y mejorar la imagen.
+
+Qué entregamos
+
+Diseño responsive (móvil primero) con Core Web Vitals optimizados.
+
+Estructura de páginas: Home, Servicios, Sobre, Contacto, Legales.
+
+Copy orientado a conversión (titulares, beneficios, CTAs).
+
+SEO on-page: títulos, metas, H1–H3, interlinking, schema básico.
+
+Formularios con validación, clic a WhatsApp y teléfono.
+
+Integración Analytics/GA4 + eventos de lead (form, tel, WhatsApp).
+
+Capacitación breve para que puedas editar contenidos.
+
+Proceso (4 pasos)
+
+Brief rápido → 2) Wireframes y propuesta visual → 3) Desarrollo → 4) Lanzamiento y medición.
+Plazo estimado: 3–4 semanas (según alcance).
+
+Resultados esperados
+
+Más solicitudes y llamadas desde el móvil.
+
+Mejor rendimiento en Google y en campañas de pago.
+
+Planes orientativos
+
+Starter (one-page o 3 secciones): desde 【€】
+
+Pro (5–7 páginas): desde 【€】
+
+A medida: presupuesto cerrado tras brief.
+
+Mini caso (ejemplo)
+
+“Centro Salud X”: nueva web + SEO on-page → +62% clics a llamada en 8 semanas.
+
+FAQs
+
+¿Trabajáis con WordPress? Sí, tema ligero y bloques; también podemos ir sin CMS.
+
+¿Incluye textos e imágenes? Incluimos copy base y selección de stock libre de derechos.
+
+¿Qué no incluye? Alojamiento y dominio (podemos gestionarlos).
+
+CTA cierre: Quiero mi nueva web
+
+/servicios/desarrollo-web/ — Desarrollo Web
+
+Meta title: Desarrollo web a medida y alto rendimiento | Seonergy
+Meta description: Funcionalidades a medida, velocidad y seguridad. Integramos APIs, landings y formularios avanzados listos para medir. Pide una demo.
+
+Hero
+
+H1: Desarrollo web rápido, seguro y medible
+Sub: Implementamos funcionalidades a medida sin sacrificar rendimiento ni SEO.
+CTA primario: Cuéntanos tu idea
+CTA secundario: Ver integraciones
+
+Casos y necesidades típicas
+
+Formularios avanzados (paso a paso, uploads, lógica).
+
+Integraciones: CRM/ERP, pasarelas, reservas, mailing.
+
+Landings para Ads con test A/B.
+
+Optimizaciones de velocidad, accesibilidad y Core Web Vitals.
+
+Tecnologías & calidad
+
+WordPress (tema propio/ligero), Headless/Next.js cuando aporta valor.
+
+Código semántico, schema, accesibilidad AA.
+
+Seguridad: HTTPS, hardening básico, copias.
+
+Consent Mode v2 y etiquetado listo para RGPD.
+
+Entregables
+
+Repositorio y guía de despliegue.
+
+Documentación breve de componentes.
+
+Checklist de QA (navegador, móvil, formularios, eventos GA4).
+
+Proceso
+
+Descubrimiento → Arquitectura → Desarrollo → QA → Lanzamiento → Soporte 30 días.
+
+FAQs
+
+¿Migráis webs existentes? Sí, con plan de redirecciones y sin perder SEO.
+
+¿Soportáis multidioma? Sí (Polylang/WPML o estructura headless).
+
+¿Puedo pedir solo una landing? Claro, con entrega en 5–10 días según complejidad.
+
+CTA cierre: Solicitar propuesta técnica
+
+/servicios/seo-estrategico/ — SEO Estratégico
+
+Meta title: SEO estratégico para pymes: más tráfico cualificado | Seonergy
+Meta description: Plan SEO completo: auditoría técnica, contenidos, SEO local y medición. Enfocado a leads y ventas, no solo posiciones. Solicita tu plan.
+
+Hero
+
+H1: SEO que impacta en ventas, no solo en rankings
+Sub: Estrategia SEO integral: técnico, contenidos y local con objetivos medibles.
+CTA primario: Quiero mi plan SEO
+CTA secundario: Ver metodología
+
+Qué incluye el plan
+
+Auditoría técnica: rastreo, indexación, canónicos, CWV, schema.
+
+Mapa de contenidos por intención y etapa del funnel.
+
+SEO local: Google Business Profile, citas, reseñas, on-page local.
+
+Optimización on-page: titles, metas, interlinking, enriquecido semántico.
+
+Tracking: GA4 + Search Console + panel de KPIs (leads por página/canal).
+
+Roadmap 90 días con prioridades (impacto vs esfuerzo).
+
+Entregables
+
+Documento estratégico (objetivos, keywords, arquitectura, calendario).
+
+Implementaciones clave y guía para contenidos.
+
+Revisión mensual con acciones y resultados.
+
+Resultados esperados
+
+Más leads desde orgánico y Maps.
+
+Mejora del CTR y de la experiencia en móvil.
+
+Planes
+
+SEO Local (comercios/servicios): desde 【€】/mes
+
+SEO Integral (sitios con >30 URLs): desde 【€】/mes
+
+FAQs
+
+¿Cuándo se ven resultados? Primeras mejoras en 4–8 semanas; crecimiento sostenido a 3–6 meses.
+
+¿Incluye creación de contenidos? Podemos crear o guiar a tu equipo (a elegir).
+
+¿Firmamos objetivos? Definimos KPIs realistas y revisamos mensualmente.
+
+CTA cierre: Pide tu auditoría SEO
+
+/servicios/marketing-ads/ — Marketing y Ads
+
+Meta title: Marketing y Ads para vender más (Google & Meta) | Seonergy
+Meta description: Campañas enfocadas a resultados: Google Ads, Meta Ads y medición de leads. Landing pages, creatividades y optimización continua. Hablemos.
+
+Hero
+
+H1: Anuncios que generan leads y ventas medibles
+Sub: Montamos y optimizamos campañas en Google & Meta con tracking impecable y landings que convierten.
+CTA primario: Lanza tus campañas
+CTA secundario: Ver paquetes
+
+Qué hacemos
+
+Google Ads: Búsqueda, Performance Max y Remarketing.
+
+Meta Ads: Tráfico y generación de clientes potenciales.
+
+Landing pages específicas con test A/B.
+
+Medición: GA4, conversiones, Consent-aware tagging y CRM si aplica.
+
+Metodología
+
+Investigación (palabras clave, audiencias, competencia).
+
+Estructura y creatividades → lanzamiento.
+
+Optimización semanal de pujas, términos, anuncios y landings.
+
+Informe claro con CPA/ROAS, leads cualificados y próximas acciones.
+
+Paquetes
+
+Setup (único): investigación + estructura + tracking: desde 【€】
+
+Gestión mensual: optimización + informes + llamadas: desde 【€】
+
+FAQs
+
+¿Necesito gran presupuesto? Con poco se puede validar; recomendamos empezar con un test de 2–4 semanas.
+
+¿Quién hace las creatividades? Podemos crearlas o trabajar con tus assets.
+
+¿Puedo pausar cuando quiera? Sí, sin permanencias; avisando con antelación.
+
+CTA cierre: Quiero vender más con Ads
+
+Elementos comunes (añadir en todas las páginas)
+
+Bloque “Por qué Seonergy”: velocidad, claridad, medición, soporte cercano.
+
+Prueba social: 2–3 testimonios con métrica (ej.: “+48% leads en 6 semanas”).
+
+CTA sticky en móvil: “Pide presupuesto” / “Hablar por WhatsApp”.
