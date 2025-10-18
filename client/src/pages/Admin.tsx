@@ -3,9 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Lock, Mail, LogOut, ExternalLink, Calendar, User as UserIcon, Globe, Check, Trash2, Filter } from "lucide-react";
+import { Lock, Mail, LogOut, ExternalLink, Calendar, User as UserIcon, Globe, Check, Trash2, Filter, MessageSquare, Phone } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -17,6 +18,7 @@ export default function Admin() {
   });
   const [loginError, setLoginError] = useState("");
   const [filter, setFilter] = useState<"all" | "contacted" | "not_contacted">("all");
+  const [messageFilter, setMessageFilter] = useState<"all" | "nuevo" | "leído" | "respondido">("all");
 
   // Login mutation
   const loginMutation = useMutation({
@@ -54,6 +56,21 @@ export default function Admin() {
     enabled: isAuthenticated,
   });
 
+  // Fetch all contact messages (only when authenticated)
+  const { data: messages = [], isLoading: messagesLoading } = useQuery<any[]>({
+    queryKey: ['/api/admin/contact-messages'],
+    queryFn: async () => {
+      const res = await fetch('/api/admin/contact-messages', {
+        method: 'POST',
+        body: JSON.stringify(credentials),
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!res.ok) throw new Error('Failed to fetch messages');
+      return await res.json();
+    },
+    enabled: isAuthenticated,
+  });
+
   // Mark as contacted mutation
   const markContactedMutation = useMutation({
     mutationFn: async ({ id, contacted }: { id: number; contacted: boolean }) => {
@@ -86,6 +103,38 @@ export default function Admin() {
     },
   });
 
+  // Update message status mutation
+  const updateMessageStatusMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: number; status: string }) => {
+      const res = await fetch(`/api/admin/contact-messages/${id}/status`, {
+        method: 'PATCH',
+        body: JSON.stringify({ ...credentials, status }),
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!res.ok) throw new Error('Failed to update');
+      return await res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/contact-messages'] });
+    },
+  });
+
+  // Delete message mutation
+  const deleteMessageMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const res = await fetch(`/api/admin/contact-messages/${id}`, {
+        method: 'DELETE',
+        body: JSON.stringify(credentials),
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!res.ok) throw new Error('Failed to delete');
+      return await res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/contact-messages'] });
+    },
+  });
+
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     await loginMutation.mutateAsync(credentials);
@@ -101,6 +150,12 @@ export default function Admin() {
     if (filter === "contacted") return analysis.contacted === 1;
     if (filter === "not_contacted") return analysis.contacted === 0;
     return true;
+  });
+
+  // Filter messages
+  const filteredMessages = messages.filter((message: any) => {
+    if (messageFilter === "all") return true;
+    return message.status === messageFilter;
   });
 
   // Login screen
@@ -186,7 +241,7 @@ export default function Admin() {
                 Panel de Administración
               </h1>
               <p className="text-muted-foreground">
-                Todos los análisis SEO realizados
+                Gestiona análisis SEO y mensajes de contacto
               </p>
             </div>
             <Button variant="outline" onClick={handleLogout} data-testid="button-logout">
@@ -194,6 +249,20 @@ export default function Admin() {
               Cerrar sesión
             </Button>
           </div>
+
+          <Tabs defaultValue="analyses" className="w-full">
+            <TabsList className="grid w-full max-w-md mb-8" style={{ gridTemplateColumns: '1fr 1fr' }}>
+              <TabsTrigger value="analyses" data-testid="tab-analyses">
+                <Globe className="w-4 h-4 mr-2" />
+                Análisis SEO ({analyses.length})
+              </TabsTrigger>
+              <TabsTrigger value="messages" data-testid="tab-messages">
+                <MessageSquare className="w-4 h-4 mr-2" />
+                Mensajes ({messages.length})
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="analyses"  className="space-y-8">
 
           {/* Stats */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
@@ -384,6 +453,216 @@ export default function Admin() {
               </div>
             )}
           </div>
+            </TabsContent>
+
+            <TabsContent value="messages" className="space-y-8">
+              {/* Stats for messages */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <Card className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">Total mensajes</p>
+                      <p className="text-3xl font-display font-bold">{messages.length}</p>
+                    </div>
+                    <div className="p-3 bg-primary/10 rounded-lg">
+                      <MessageSquare className="w-6 h-6 text-primary" />
+                    </div>
+                  </div>
+                </Card>
+                <Card className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">Nuevos</p>
+                      <p className="text-3xl font-display font-bold">
+                        {messages.filter((m: any) => m.status === 'nuevo').length}
+                      </p>
+                    </div>
+                    <div className="p-3 bg-orange-500/10 rounded-lg">
+                      <Mail className="w-6 h-6 text-orange-500" />
+                    </div>
+                  </div>
+                </Card>
+                <Card className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">Leídos</p>
+                      <p className="text-3xl font-display font-bold">
+                        {messages.filter((m: any) => m.status === 'leído').length}
+                      </p>
+                    </div>
+                    <div className="p-3 bg-blue-500/10 rounded-lg">
+                      <Check className="w-6 h-6 text-blue-500" />
+                    </div>
+                  </div>
+                </Card>
+                <Card className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">Respondidos</p>
+                      <p className="text-3xl font-display font-bold">
+                        {messages.filter((m: any) => m.status === 'respondido').length}
+                      </p>
+                    </div>
+                    <div className="p-3 bg-green-500/10 rounded-lg">
+                      <Check className="w-6 h-6 text-green-500" />
+                    </div>
+                  </div>
+                </Card>
+              </div>
+
+              {/* Messages list */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
+                  <h2 className="font-display text-2xl font-bold">Mensajes recibidos</h2>
+                  
+                  {/* Filters */}
+                  <div className="flex gap-2 flex-wrap">
+                    <Button
+                      variant={messageFilter === "all" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setMessageFilter("all")}
+                      data-testid="filter-messages-all"
+                    >
+                      Todos ({messages.length})
+                    </Button>
+                    <Button
+                      variant={messageFilter === "nuevo" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setMessageFilter("nuevo")}
+                      data-testid="filter-messages-nuevo"
+                    >
+                      Nuevos ({messages.filter((m: any) => m.status === 'nuevo').length})
+                    </Button>
+                    <Button
+                      variant={messageFilter === "leído" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setMessageFilter("leído")}
+                      data-testid="filter-messages-leido"
+                    >
+                      Leídos ({messages.filter((m: any) => m.status === 'leído').length})
+                    </Button>
+                    <Button
+                      variant={messageFilter === "respondido" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setMessageFilter("respondido")}
+                      data-testid="filter-messages-respondido"
+                    >
+                      Respondidos ({messages.filter((m: any) => m.status === 'respondido').length})
+                    </Button>
+                  </div>
+                </div>
+                
+                {messagesLoading ? (
+                  <div className="text-center py-12">
+                    <p className="text-muted-foreground">Cargando mensajes...</p>
+                  </div>
+                ) : filteredMessages.length === 0 ? (
+                  <Card className="p-12 text-center">
+                    <p className="text-muted-foreground">
+                      {messageFilter === "all" 
+                        ? "No hay mensajes todavía" 
+                        : `No hay mensajes con estado "${messageFilter}"`
+                      }
+                    </p>
+                  </Card>
+                ) : (
+                  <div className="space-y-3">
+                    {filteredMessages.map((message: any) => (
+                      <Card key={message.id} className="p-6 hover-elevate">
+                        <div className="flex items-start justify-between gap-4 flex-wrap">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-3 mb-3 flex-wrap">
+                              <h3 className="font-display font-bold text-lg">
+                                {message.name}
+                              </h3>
+                              <Badge 
+                                variant={
+                                  message.status === 'respondido' ? 'default' : 
+                                  message.status === 'leído' ? 'secondary' : 
+                                  'outline'
+                                }
+                                data-testid={`badge-message-status-${message.id}`}
+                              >
+                                {message.status.charAt(0).toUpperCase() + message.status.slice(1)}
+                              </Badge>
+                            </div>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm mb-4">
+                              <div className="flex items-center gap-2 text-muted-foreground">
+                                <Mail className="w-4 h-4" />
+                                <a href={`mailto:${message.email}`} className="hover:text-primary transition-colors truncate">
+                                  {message.email}
+                                </a>
+                              </div>
+                              {message.phone && (
+                                <div className="flex items-center gap-2 text-muted-foreground">
+                                  <Phone className="w-4 h-4" />
+                                  <a href={`tel:${message.phone}`} className="hover:text-primary transition-colors">
+                                    {message.phone}
+                                  </a>
+                                </div>
+                              )}
+                              <div className="flex items-center gap-2 text-muted-foreground">
+                                <Calendar className="w-4 h-4" />
+                                <span>
+                                  {format(new Date(message.createdAt), "dd 'de' MMMM, yyyy 'a las' HH:mm", { locale: es })}
+                                </span>
+                              </div>
+                            </div>
+                            
+                            <div className="bg-muted/50 rounded-lg p-4">
+                              <p className="text-sm whitespace-pre-wrap">{message.message}</p>
+                            </div>
+                          </div>
+                          
+                          {/* Actions */}
+                          <div className="flex gap-2 flex-shrink-0 flex-wrap">
+                            <Button
+                              size="sm"
+                              variant={message.status === 'nuevo' ? 'default' : 'outline'}
+                              onClick={() => updateMessageStatusMutation.mutate({ 
+                                id: message.id, 
+                                status: 'leído'
+                              })}
+                              disabled={updateMessageStatusMutation.isPending}
+                              data-testid={`button-mark-read-${message.id}`}
+                            >
+                              Marcar leído
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant={message.status === 'respondido' ? 'default' : 'outline'}
+                              onClick={() => updateMessageStatusMutation.mutate({ 
+                                id: message.id, 
+                                status: 'respondido'
+                              })}
+                              disabled={updateMessageStatusMutation.isPending}
+                              data-testid={`button-mark-responded-${message.id}`}
+                            >
+                              Marcar respondido
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                if (confirm(`¿Eliminar mensaje de ${message.name}?`)) {
+                                  deleteMessageMutation.mutate(message.id);
+                                }
+                              }}
+                              disabled={deleteMessageMutation.isPending}
+                              data-testid={`button-delete-message-${message.id}`}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
       </section>
     </div>
