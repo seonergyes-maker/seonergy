@@ -2,9 +2,10 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Lock, Mail, LogOut, ExternalLink, Calendar, User as UserIcon, Globe } from "lucide-react";
+import { Lock, Mail, LogOut, ExternalLink, Calendar, User as UserIcon, Globe, Check, Trash2, Filter } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -15,6 +16,7 @@ export default function Admin() {
     password: "",
   });
   const [loginError, setLoginError] = useState("");
+  const [filter, setFilter] = useState<"all" | "contacted" | "not_contacted">("all");
 
   // Login mutation
   const loginMutation = useMutation({
@@ -52,6 +54,38 @@ export default function Admin() {
     enabled: isAuthenticated,
   });
 
+  // Mark as contacted mutation
+  const markContactedMutation = useMutation({
+    mutationFn: async ({ id, contacted }: { id: number; contacted: boolean }) => {
+      const res = await fetch(`/api/admin/seo-analysis/${id}/contacted`, {
+        method: 'PATCH',
+        body: JSON.stringify({ ...credentials, contacted }),
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!res.ok) throw new Error('Failed to update');
+      return await res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/seo-analysis'] });
+    },
+  });
+
+  // Delete analysis mutation
+  const deleteMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const res = await fetch(`/api/admin/seo-analysis/${id}`, {
+        method: 'DELETE',
+        body: JSON.stringify(credentials),
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!res.ok) throw new Error('Failed to delete');
+      return await res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/seo-analysis'] });
+    },
+  });
+
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     await loginMutation.mutateAsync(credentials);
@@ -61,6 +95,13 @@ export default function Admin() {
     setIsAuthenticated(false);
     setCredentials({ email: "", password: "" });
   };
+
+  // Filter analyses
+  const filteredAnalyses = analyses.filter((analysis: any) => {
+    if (filter === "contacted") return analysis.contacted === 1;
+    if (filter === "not_contacted") return analysis.contacted === 0;
+    return true;
+  });
 
   // Login screen
   if (!isAuthenticated) {
@@ -155,7 +196,7 @@ export default function Admin() {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
             <Card className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -188,13 +229,26 @@ export default function Admin() {
             <Card className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Usuarios únicos</p>
+                  <p className="text-sm text-muted-foreground mb-1">No contactados</p>
                   <p className="text-3xl font-display font-bold">
-                    {new Set(analyses.map((a: any) => a.email)).size}
+                    {analyses.filter((a: any) => a.contacted === 0).length}
                   </p>
                 </div>
-                <div className="p-3 bg-primary/10 rounded-lg">
-                  <UserIcon className="w-6 h-6 text-primary" />
+                <div className="p-3 bg-orange-500/10 rounded-lg">
+                  <Mail className="w-6 h-6 text-orange-500" />
+                </div>
+              </div>
+            </Card>
+            <Card className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Contactados</p>
+                  <p className="text-3xl font-display font-bold">
+                    {analyses.filter((a: any) => a.contacted === 1).length}
+                  </p>
+                </div>
+                <div className="p-3 bg-green-500/10 rounded-lg">
+                  <Check className="w-6 h-6 text-green-500" />
                 </div>
               </div>
             </Card>
@@ -202,26 +256,65 @@ export default function Admin() {
 
           {/* Analyses list */}
           <div className="space-y-4">
-            <h2 className="font-display text-2xl font-bold mb-6">Análisis realizados</h2>
+            <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
+              <h2 className="font-display text-2xl font-bold">Análisis realizados</h2>
+              
+              {/* Filters */}
+              <div className="flex gap-2">
+                <Button
+                  variant={filter === "all" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setFilter("all")}
+                  data-testid="filter-all"
+                >
+                  <Filter className="w-4 h-4 mr-2" />
+                  Todos ({analyses.length})
+                </Button>
+                <Button
+                  variant={filter === "not_contacted" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setFilter("not_contacted")}
+                  data-testid="filter-not-contacted"
+                >
+                  No contactados ({analyses.filter((a: any) => a.contacted === 0).length})
+                </Button>
+                <Button
+                  variant={filter === "contacted" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setFilter("contacted")}
+                  data-testid="filter-contacted"
+                >
+                  Contactados ({analyses.filter((a: any) => a.contacted === 1).length})
+                </Button>
+              </div>
+            </div>
             
             {isLoading ? (
               <div className="text-center py-12">
                 <p className="text-muted-foreground">Cargando análisis...</p>
               </div>
-            ) : analyses.length === 0 ? (
+            ) : filteredAnalyses.length === 0 ? (
               <Card className="p-12 text-center">
-                <p className="text-muted-foreground">No hay análisis realizados todavía</p>
+                <p className="text-muted-foreground">
+                  {filter === "all" 
+                    ? "No hay análisis realizados todavía" 
+                    : `No hay análisis ${filter === "contacted" ? "contactados" : "sin contactar"}`
+                  }
+                </p>
               </Card>
             ) : (
               <div className="space-y-3">
-                {analyses.map((analysis: any) => (
+                {filteredAnalyses.map((analysis: any) => (
                   <Card key={analysis.id} className="p-6 hover-elevate">
                     <div className="flex items-start justify-between gap-4 flex-wrap">
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-3 mb-2">
+                        <div className="flex items-center gap-3 mb-2 flex-wrap">
                           <h3 className="font-display font-bold text-lg truncate">
                             {analysis.website}
                           </h3>
+                          <Badge variant={analysis.contacted === 1 ? "default" : "secondary"} data-testid={`badge-status-${analysis.id}`}>
+                            {analysis.contacted === 1 ? "Contactado" : "Sin contactar"}
+                          </Badge>
                           <a
                             href={`/analiza-tu-web#${analysis.uniqueId}`}
                             target="_blank"
@@ -254,6 +347,36 @@ export default function Admin() {
                         <div className="mt-3 text-xs text-muted-foreground font-mono">
                           ID: {analysis.uniqueId}
                         </div>
+                      </div>
+                      
+                      {/* Actions */}
+                      <div className="flex gap-2 flex-shrink-0">
+                        <Button
+                          size="sm"
+                          variant={analysis.contacted === 1 ? "outline" : "default"}
+                          onClick={() => markContactedMutation.mutate({ 
+                            id: analysis.id, 
+                            contacted: analysis.contacted === 1 ? false : true 
+                          })}
+                          disabled={markContactedMutation.isPending}
+                          data-testid={`button-toggle-contacted-${analysis.id}`}
+                        >
+                          <Check className="w-4 h-4 mr-2" />
+                          {analysis.contacted === 1 ? "Desmarcar" : "Marcar contactado"}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            if (confirm(`¿Eliminar análisis de ${analysis.website}?`)) {
+                              deleteMutation.mutate(analysis.id);
+                            }
+                          }}
+                          disabled={deleteMutation.isPending}
+                          data-testid={`button-delete-${analysis.id}`}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
                       </div>
                     </div>
                   </Card>

@@ -92,6 +92,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Mark SEO analysis as contacted (admin only)
+  app.patch("/api/admin/seo-analysis/:id/contacted", checkAdminAuth, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { contacted } = req.body;
+      
+      await db
+        .update(seoAnalysis)
+        .set({ contacted: contacted ? 1 : 0 })
+        .where(eq(seoAnalysis.id, id));
+      
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Delete SEO analysis (admin only)
+  app.delete("/api/admin/seo-analysis/:id", checkAdminAuth, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      
+      await db
+        .delete(seoAnalysis)
+        .where(eq(seoAnalysis.id, id));
+      
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
