@@ -14,6 +14,7 @@ import Proyectos from "@/pages/Proyectos";
 import Proceso from "@/pages/Proceso";
 import Contacto from "@/pages/Contacto";
 import AnalizaTuWeb from "@/pages/AnalizaTuWeb";
+import Admin from "@/pages/Admin";
 import PoliticaPrivacidad from "@/pages/PoliticaPrivacidad";
 import TerminosUso from "@/pages/TerminosUso";
 import NotFound from "@/pages/not-found";
@@ -44,6 +45,7 @@ function Router() {
         <Route path="/proceso" component={Proceso} />
         <Route path="/contacto" component={Contacto} />
         <Route path="/analiza-tu-web" component={AnalizaTuWeb} />
+        <Route path="/admin" component={Admin} />
         <Route path="/politica-privacidad" component={PoliticaPrivacidad} />
         <Route path="/terminos-uso" component={TerminosUso} />
         <Route component={NotFound} />

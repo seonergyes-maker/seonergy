@@ -199,7 +199,7 @@ export default function AnalizaTuWeb() {
   }, []);
 
   // Load analysis if ID exists
-  const { data: loadedAnalysis, isLoading: isLoadingAnalysis } = useQuery({
+  const { data: loadedAnalysis, isLoading: isLoadingAnalysis } = useQuery<any>({
     queryKey: ['/api/seo-analysis', currentAnalysisId],
     enabled: !!currentAnalysisId && !showResults,
   });
@@ -218,13 +218,15 @@ export default function AnalizaTuWeb() {
   // Save analysis mutation
   const saveAnalysisMutation = useMutation({
     mutationFn: async (data: any) => {
-      return await apiRequest('/api/seo-analysis', {
+      const res = await fetch('/api/seo-analysis', {
         method: 'POST',
         body: JSON.stringify(data),
         headers: { 'Content-Type': 'application/json' },
       });
+      if (!res.ok) throw new Error('Failed to save analysis');
+      return await res.json();
     },
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       setCurrentAnalysisId(data.uniqueId);
       window.location.hash = data.uniqueId;
     },
