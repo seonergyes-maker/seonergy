@@ -1,0 +1,250 @@
+1) SEO TÉCNICO
+1.1 Rastreo e indexación
+
+Título: robots.txt
+Errores a mostrar:
+
+[Rojo] No hemos encontrado tu archivo robots.txt. Los buscadores no tienen instrucciones de rastreo.
+
+[Rojo] Tu robots.txt está bloqueando páginas importantes. Google no puede rastrearlas.
+
+[Ámbar] Tu robots.txt no enlaza al sitemap. Recomendado para acelerar el descubrimiento.
+
+Título: Sitemap XML
+Errores a mostrar:
+
+[Rojo] No has publicado un sitemap XML. Google tardará más en descubrir tus páginas.
+
+[Ámbar] Tu sitemap contiene URLs no válidas o no indexables. Revísalo y vuelve a enviarlo.
+
+[Ámbar] El sitemap no se ha actualizado recientemente. Te recomendamos regenerarlo.
+
+Título: Canónicos (rel="canonical")
+Errores a mostrar:
+
+[Rojo] Faltan etiquetas canónicas en páginas clave. Puede haber contenido duplicado.
+
+[Rojo] Detectamos canónicos rotos o que apuntan a otra página por error. Riesgo de desindexación.
+
+[Ámbar] Canónicos relativos en lugar de absolutos. Usa URLs completas (https://…).
+
+Título: Consolidación de dominio y protocolo
+Errores a mostrar:
+
+[Rojo] Tu web carga en varias versiones (http/https o con/sin www). Debe redirigir a una única versión.
+
+[Ámbar] Hemos visto cadenas de redirecciones. Esto ralentiza y confunde a Google.
+
+1.2 Arquitectura y URLs
+
+Título: Estructura de URLs
+Errores a mostrar:
+
+[Ámbar] Slugs largos o con parámetros innecesarios. Simplica y hazlos legibles.
+
+[Ámbar] Inconsistencias con la barra final (/). Unifica el criterio en toda la web.
+
+Título: Paginación y filtros
+Errores a mostrar:
+
+[Ámbar] Páginas de filtrado indexadas sin valor único. Bloquéalas o canónicalas.
+
+[Ámbar] Falta gestión de paginación. Revisa enlaces “Siguiente/Anterior”.
+
+Título: Migas de pan (Breadcrumbs)
+Errores a mostrar:
+
+[Ámbar] No encontramos breadcrumbs visibles. Mejoran navegación y SEO.
+
+[Ámbar] Breadcrumbs sin marcado estructurado. Añade BreadcrumbList.
+
+1.3 HTML semántico y metadatos
+
+Título: Títulos & Metadescripciones
+Errores a mostrar:
+
+[Rojo] Páginas sin title único. Es básico para posicionar.
+
+[Ámbar] Metadescripciones ausentes o duplicadas. Afecta al CTR en Google.
+
+[Ámbar] Títulos demasiado largos o cortos. Ajusta a ~55–60 caracteres.
+
+Título: Encabezados (H1–H3)
+Errores a mostrar:
+
+[Ámbar] Hay páginas con más de un H1 o sin H1. Define un único H1 por página.
+
+Título: Open Graph & Twitter Cards
+Errores a mostrar:
+
+[Ámbar] Faltan metadatos sociales. Los enlaces compartidos no se ven bien.
+
+1.4 Datos estructurados (Schema)
+
+Título: Marcado de negocio y servicios
+Errores a mostrar:
+
+[Rojo] No detectamos Schema de negocio local. Añade LocalBusiness con dirección y teléfono.
+
+[Ámbar] Tus servicios no tienen marcado Service. Ayuda a Google a entender tu oferta.
+
+[Ámbar] Hay advertencias en datos estructurados. Revisa los campos obligatorios.
+
+1.5 Rendimiento & Core Web Vitals
+
+Título: Velocidad en móvil (CWV)
+Errores a mostrar:
+
+[Rojo] Tu LCP supera 2,5 s en móvil. Optimiza imágenes y carga crítica.
+
+[Rojo] Tu INP supera 200 ms. Hay bloqueos de interacción (JS excesivo).
+
+[Rojo] Tu CLS supera 0,1. El contenido “salta” al cargar.
+
+Título: Carga de recursos
+Errores a mostrar:
+
+[Ámbar] Imágenes sin WebP/AVIF o sin lazy-load. Afecta al tiempo de carga.
+
+[Ámbar] Demasiados scripts bloqueando el render. Diféralos o elimínalos.
+
+[Ámbar] Sin caché estática adecuada. Activa cache-control en recursos.
+
+1.6 Contenido duplicado y canibalización
+
+Título: Duplicados y parámetros
+Errores a mostrar:
+
+[Rojo] Detectamos contenido duplicado entre páginas. Ajusta canónicos o reescribe.
+
+[Ámbar] URLs con UTM indexadas. Bloquéalas en robots y limpia canónicos.
+
+1.7 SEO local on-page
+
+Título: Señales locales
+Errores a mostrar:
+
+[Ámbar] No vemos NAP (Nombre, Dirección, Teléfono) visible. Añádelo en el footer y contacto.
+
+[Ámbar] Falta un mapa o enlace a tu perfil de Google Business. Mejora tu visibilidad local.
+
+1.8 Salud del sitio
+
+Título: Errores 4xx/5xx y enlaces rotos
+Errores a mostrar:
+
+[Rojo] Hemos encontrado páginas con error 4xx/5xx. Corrígelas o redirígelas.
+
+[Ámbar] Hay enlaces internos rotos. Revísalos para no perder autoridad.
+
+1.9 Seguridad
+
+Título: HTTPS y cabeceras
+Errores a mostrar:
+
+[Rojo] Algunas páginas no cargan bajo HTTPS. Fuerza siempre https.
+
+[Ámbar] Falta HSTS o cabeceras de seguridad básicas. Actívalas para mayor protección.
+
+2) ANALYTICS, TRACKING & CONSENTIMIENTO
+2.1 Consentimiento (CMP + Consent Mode v2)
+
+Título: Banner de cookies y estados de consentimiento
+Errores a mostrar:
+
+[Rojo] No detectamos un banner de consentimiento (CMP). Es obligatorio antes de cargar cookies no esenciales.
+
+[Rojo] Etiquetas de análisis/marketing cargan sin consentimiento. Incumple el RGPD.
+
+[Ámbar] Tu Consent Mode no aplica estados por defecto (“denied”). Configúralo antes de cualquier tag.
+
+[Ámbar] No hay opción visible para cambiar/revocar el consentimiento. Añade un enlace “Preferencias”.
+
+2.2 Google Tag Manager (GTM)
+
+Título: Estructura de contenedor
+Errores a mostrar:
+
+[Ámbar] No hemos encontrado GTM o está mal implementado. Centraliza el etiquetado para evitar duplicados.
+
+[Ámbar] Tags duplicados o sin nomenclatura clara. Complica el mantenimiento y el QA.
+
+[Ámbar] No usas capas “Consent Initialization/Initialization”. Riego de disparos antes del consentimiento.
+
+2.3 Google Analytics 4 (GA4)
+
+Título: Implementación base
+Errores a mostrar:
+
+[Rojo] GA4 no está instalado o no registra visitas. No podrás medir resultados.
+
+[Ámbar] Faltan parámetros clave en page_view (source/medium/utm). Perderás atribución.
+
+Título: Conversiones
+Errores a mostrar:
+
+[Rojo] Tus eventos de conversión (leads) no están configurados. No medimos oportunidades reales.
+
+[Ámbar] Las conversiones existen pero no están marcadas en GA4. Actívalas para ver informes.
+
+2.4 Eventos y dataLayer
+
+Título: Estándar de eventos (leads/contacto)
+Errores a mostrar:
+
+[Rojo] No recibimos el evento “generate_lead”. No podemos medir formularios, llamadas o WhatsApp.
+
+[Ámbar] Eventos sin parámetros (método, servicio, ubicación). Pierdes contexto de negocio.
+
+2.5 Vinculaciones y anuncios
+
+Título: Google Ads / Meta / Search Console
+Errores a mostrar:
+
+[Ámbar] La propiedad GA4 no está vinculada a Google Ads. Pierdes informes y audiencias.
+
+[Ámbar] No hay vínculo con Search Console. Falta visibilidad SEO en informes.
+
+[Ámbar] Meta Pixel carga sin respetar consentimiento de marketing. Ajusta disparadores.
+
+2.6 Calidad de datos y privacidad
+
+Título: Muestreo, retención y consistencia
+Errores a mostrar:
+
+[Ámbar] Retención de datos no documentada o excesiva. Define un plazo acorde a tu política.
+
+[Ámbar] Eventos disparan múltiples veces por interacción. Revisa triggers para evitar inflar métricas.
+
+2.7 Server-Side Tagging (opcional)
+
+Título: Etiquetado del lado del servidor
+Errores a mostrar:
+
+[Ámbar] No usas etiquetado server-side. Puede mejorar rendimiento y privacidad (recomendado, no obligatorio).
+
+2.8 QA y pruebas
+
+Título: Verificación en Tag Assistant
+Errores a mostrar:
+
+[Rojo] Tu configuración no supera las pruebas de consentimiento. Algunas etiquetas se disparan sin permiso.
+
+[Ámbar] No hay entorno de prueba o vista previa activa. Activa el modo “Preview” para validar cambios.
+
+3) LEGALES (RGPD) RELACIONADOS CON TRACKING
+
+Título: Páginas y cláusulas
+Errores a mostrar:
+
+[Rojo] Falta Política de cookies o Privacidad actualizada. Requisito legal en España.
+
+[Ámbar] Formularios sin checkbox de consentimiento y enlace a privacidad. Debes informar al usuario.
+
+Cómo usar estos mensajes
+
+Muestra solo los errores detectados en cada auditoría.
+
+Añade debajo un mini “Cómo lo arreglamos” de 1–2 líneas si quieres impulsar la conversión (opcional).
+
+Orden de salida recomendado: SEO Técnico → Consentimiento → Tracking → GA4/Ads (de más crítico a operativo).
