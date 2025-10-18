@@ -126,14 +126,6 @@ export default function Footer() {
                   Desarrollo
                 </a>
               </li>
-              <li>
-                <a
-                  href="#servicios"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Branding
-                </a>
-              </li>
             </ul>
           </div>
 
@@ -154,14 +146,6 @@ export default function Footer() {
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Proceso
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Blog
                 </a>
               </li>
               <li>
