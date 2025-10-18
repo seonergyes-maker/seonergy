@@ -6,11 +6,11 @@
 
 ## Paleta de Color
 
-**Modo Oscuro Predominante** (profesional y sofisticado):
+**Colores Corporativos Seonergy** (basados en el logo oficial):
 - **Base Dark:** 220 15% 8% (fondo principal casi negro)
 - **Surface:** 220 12% 12% (tarjetas y elementos elevados)
-- **Primary Brand:** 280 85% 65% (púrpura vibrante, no gradiente)
-- **Accent Tech:** 180 75% 55% (cyan/turquesa tecnológico)
+- **Primary Brand (Amarillo Dorado):** 45 98% 51% (#fdc408 - color corporativo principal de Seonergy)
+- **Accent Tech:** 180 75% 55% (cyan/turquesa tecnológico - complementario)
 - **Text Primary:** 0 0% 98% (blanco puro para títulos)
 - **Text Secondary:** 220 10% 70% (gris claro para descripciones)
 
