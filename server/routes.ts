@@ -1,10 +1,11 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { db } from "./db";
-import { seoAnalysis } from "@shared/schema";
-import { insertSeoAnalysisSchema } from "@shared/schema";
+import { seoAnalysis, contactMessages } from "@shared/schema";
+import { insertSeoAnalysisSchema, insertContactMessageSchema } from "@shared/schema";
 import { eq } from "drizzle-orm";
 import { analyzeSEO } from "./seo-analyzer";
+import { generateAntispamToken, validateAntispam } from "./antispam";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
@@ -117,6 +118,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await db
         .delete(seoAnalysis)
         .where(eq(seoAnalysis.id, id));
+      
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // ===== CONTACT MESSAGES =====
+
+  // Get antispam token
+  app.get("/api/contact/token", (req: Request, res: Response) => {
+    const token = generateAntispamToken();
+    res.json({ token, timestamp: Date.now() });
+  });
+
+  // Submit contact message
+  app.post("/api/contact", async (req: Request, res: Response) => {
+    try {
+      const { name, email, phone, message, token, timestamp, honeypot } = req.body;
+      
+      // Validate antispam
+      const validation = validateAntispam({ token, honeypot, timestamp });
+      if (!validation.valid) {
+        return res.status(400).json({ error: validation.error });
+      }
+
+      // Validate and save message
+      const validatedData = insertContactMessageSchema.parse({ name, email, phone, message });
+      
+      const [result] = await db.insert(contactMessages).values(validatedData);
+      res.json({ success: true, id: result.insertId });
+    } catch (error: any) {
+      console.error("Error saving contact message:", error);
+      res.status(400).json({ error: error.message || "Error al enviar mensaje" });
+    }
+  });
+
+  // Get all contact messages (admin only)
+  app.post("/api/admin/contact-messages", checkAdminAuth, async (req: Request, res: Response) => {
+    try {
+      const messages = await db
+        .select()
+        .from(contactMessages)
+        .orderBy(contactMessages.createdAt);
+      
+      res.json(messages);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Update contact message status (admin only)
+  app.patch("/api/admin/contact-messages/:id/status", checkAdminAuth, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { status } = req.body;
+      
+      if (!["nuevo", "leído", "respondido"].includes(status)) {
+        return res.status(400).json({ error: "Estado inválido" });
+      }
+      
+      await db
+        .update(contactMessages)
+        .set({ status })
+        .where(eq(contactMessages.id, id));
+      
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Delete contact message (admin only)
+  app.delete("/api/admin/contact-messages/:id", checkAdminAuth, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      
+      await db
+        .delete(contactMessages)
+        .where(eq(contactMessages.id, id));
       
       res.json({ success: true });
     } catch (error: any) {
