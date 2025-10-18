@@ -88,6 +88,82 @@ async function checkRobotsTxt(baseUrl: string): Promise<{ exists: boolean; conte
   }
 }
 
+function analyzeRobotsTxtContent(content: string): Array<{
+  name: string;
+  status: 'success' | 'warning' | 'error';
+  message: string;
+}> {
+  const checks = [];
+  const lines = content.split('\n').map(line => line.trim()).filter(line => line && !line.startsWith('#'));
+
+  // Verificar si hay User-agent
+  const hasUserAgent = lines.some(line => line.toLowerCase().startsWith('user-agent:'));
+  if (hasUserAgent) {
+    checks.push({
+      name: 'User-agent definido',
+      status: 'success' as const,
+      message: 'Robots.txt tiene User-agent configurado',
+    });
+  } else {
+    checks.push({
+      name: 'User-agent definido',
+      status: 'error' as const,
+      message: 'Robots.txt no tiene User-agent - no es válido',
+    });
+  }
+
+  // Verificar si bloquea todo el sitio
+  const blocksEverything = lines.some(line => 
+    line.toLowerCase() === 'disallow: /' && 
+    lines.indexOf('user-agent: *') < lines.indexOf(line)
+  );
+  
+  if (blocksEverything) {
+    checks.push({
+      name: 'Bloqueo total',
+      status: 'error' as const,
+      message: '¡CRÍTICO! Robots.txt bloquea TODO el sitio con "Disallow: /" - los buscadores no pueden rastrearte',
+    });
+  } else {
+    checks.push({
+      name: 'Bloqueo total',
+      status: 'success' as const,
+      message: 'No bloquea todo el sitio',
+    });
+  }
+
+  // Verificar si indica Sitemap
+  const hasSitemap = lines.some(line => line.toLowerCase().startsWith('sitemap:'));
+  if (hasSitemap) {
+    const sitemapLine = lines.find(line => line.toLowerCase().startsWith('sitemap:'));
+    checks.push({
+      name: 'Sitemap en robots.txt',
+      status: 'success' as const,
+      message: `Sitemap indicado: ${sitemapLine?.split(':')[1]?.trim()}`,
+    });
+  } else {
+    checks.push({
+      name: 'Sitemap en robots.txt',
+      status: 'warning' as const,
+      message: 'Robots.txt no indica la ubicación del Sitemap',
+    });
+  }
+
+  // Verificar reglas comunes problemáticas
+  const disallowCss = lines.some(line => line.toLowerCase().includes('disallow:') && line.toLowerCase().includes('.css'));
+  const disallowJs = lines.some(line => line.toLowerCase().includes('disallow:') && line.toLowerCase().includes('.js'));
+  
+  if (disallowCss || disallowJs) {
+    checks.push({
+      name: 'Bloqueo de recursos',
+      status: 'warning' as const,
+      message: 'Bloqueas archivos CSS/JS - puede afectar el renderizado en Google',
+    });
+  }
+
+  return checks;
+}
+
 async function checkSitemap(baseUrl: string): Promise<{ exists: boolean; url?: string }> {
   try {
     // Intentar sitemap.xml en la raíz
@@ -314,6 +390,37 @@ function analyzeMetaTags(html: string, $: cheerio.CheerioAPI) {
     });
   }
 
+  // Meta Robots Noindex - CRÍTICO
+  const metaRobots = $('meta[name="robots"]').attr('content');
+  if (metaRobots) {
+    const robotsLower = metaRobots.toLowerCase();
+    if (robotsLower.includes('noindex')) {
+      checks.push({
+        name: 'Meta Robots',
+        status: 'error' as const,
+        message: '¡CRÍTICO! Tienes meta robots con "noindex" - Google NO puede indexar tu web',
+      });
+    } else if (robotsLower.includes('nofollow')) {
+      checks.push({
+        name: 'Meta Robots',
+        status: 'warning' as const,
+        message: 'Meta robots con "nofollow" - Google no seguirá los enlaces de esta página',
+      });
+    } else {
+      checks.push({
+        name: 'Meta Robots',
+        status: 'success' as const,
+        message: `Meta robots configurado correctamente: ${metaRobots}`,
+      });
+    }
+  } else {
+    checks.push({
+      name: 'Meta Robots',
+      status: 'success' as const,
+      message: 'Sin meta robots (correcto - permite indexación por defecto)',
+    });
+  }
+
   return checks;
 }
 
@@ -510,13 +617,17 @@ export async function analyzeSEO(websiteUrl: string): Promise<SEOAnalysisResult>
       });
     }
 
-    // Robots.txt
-    if (robotsResult.exists) {
+    // Robots.txt - Existencia y análisis profundo
+    if (robotsResult.exists && robotsResult.content) {
       technicalChecks.push({
         name: 'Robots.txt',
         status: 'success' as const,
         message: 'Archivo robots.txt encontrado',
       });
+      
+      // Añadir análisis profundo del contenido
+      const robotsAnalysis = analyzeRobotsTxtContent(robotsResult.content);
+      technicalChecks.push(...robotsAnalysis);
     } else {
       technicalChecks.push({
         name: 'Robots.txt',
