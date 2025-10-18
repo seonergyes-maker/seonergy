@@ -110,37 +110,107 @@ async function checkSitemap(baseUrl: string): Promise<{ exists: boolean; url?: s
   }
 }
 
-async function checkGoogleIndexing(domain: string): Promise<{ indexed: number; query: string }> {
+async function checkGoogleIndexing(domain: string): Promise<{ indexed: number | null; query: string; searchUrl: string }> {
   try {
     // Limpiar dominio
     const cleanDomain = domain.replace(/^https?:\/\//, '').replace(/\/$/, '').split('/')[0];
     const searchQuery = `site:${cleanDomain}`;
     const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}`;
 
+    // Headers más realistas para evitar detección de bot
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000); // 5 segundos timeout
+
     const response = await fetch(searchUrl, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'es-ES,es;q=0.9,en;q=0.8',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'DNT': '1',
+        'Connection': 'keep-alive',
+        'Upgrade-Insecure-Requests': '1',
       },
+      signal: controller.signal,
     });
+
+    clearTimeout(timeout);
 
     const html = await response.text();
     const $ = cheerio.load(html);
 
-    // Intentar extraer el número de resultados
-    const resultStats = $('#result-stats').text();
-    const match = resultStats.match(/Aproximadamente ([\d.,]+)|About ([\d.,]+)/);
+    // Estrategia 1: Buscar en #result-stats
+    let resultStats = $('#result-stats').text();
+    console.log('[Google Indexing] result-stats text:', resultStats);
     
-    if (match) {
-      const numberStr = (match[1] || match[2]).replace(/[.,]/g, '');
-      return { indexed: parseInt(numberStr, 10), query: searchQuery };
+    // Estrategia 2: Buscar en div#rcnt (container de resultados)
+    if (!resultStats) {
+      resultStats = $('div#result-stats').text();
     }
 
-    // Si no encontramos stats, intentar contar resultados en la página
-    const results = $('.g').length;
-    return { indexed: results > 0 ? results : 0, query: searchQuery };
+    // Estrategia 3: Buscar en cualquier elemento que mencione resultados
+    if (!resultStats) {
+      resultStats = $('div:contains("resultados")').first().text() || 
+                    $('div:contains("results")').first().text();
+    }
+
+    // Intentar múltiples patrones de regex para extraer números
+    const patterns = [
+      /Aproximadamente\s+([\d.,\s]+)\s+resultados?/i,
+      /About\s+([\d.,\s]+)\s+results?/i,
+      /([\d.,]+)\s+resultados?/i,
+      /([\d.,]+)\s+results?/i,
+      /de\s+([\d.,]+)/i,
+      /of\s+([\d.,]+)/i,
+    ];
+
+    for (const pattern of patterns) {
+      const match = resultStats.match(pattern);
+      if (match && match[1]) {
+        // Limpiar número: eliminar puntos, comas, espacios
+        const numberStr = match[1].replace(/[\s.,]/g, '');
+        const number = parseInt(numberStr, 10);
+        
+        if (!isNaN(number) && number > 0) {
+          console.log(`[Google Indexing] Found ${number} indexed pages for ${cleanDomain}`);
+          return { indexed: number, query: searchQuery, searchUrl };
+        }
+      }
+    }
+
+    // Estrategia 4: Contar resultados individuales en la página
+    const resultContainers = [
+      '.g',           // Selector clásico
+      'div.g',        // Más específico
+      '[data-sokoban-container]', // Nuevo selector de Google
+      '.tF2Cxc',      // Otro contenedor común
+      '.yuRUbf',      // Enlaces de resultados
+    ];
+
+    for (const selector of resultContainers) {
+      const results = $(selector).length;
+      if (results > 0) {
+        console.log(`[Google Indexing] Found ${results} results using selector: ${selector}`);
+        return { indexed: results, query: searchQuery, searchUrl };
+      }
+    }
+
+    // Si llegamos aquí, no pudimos extraer información
+    console.log('[Google Indexing] Could not extract indexing info, returning null');
+    return { indexed: null, query: searchQuery, searchUrl };
+
   } catch (error) {
-    console.error('Error checking Google indexing:', error);
-    return { indexed: 0, query: `site:${domain}` };
+    if (error instanceof Error && error.name === 'AbortError') {
+      console.error('[Google Indexing] Request timeout after 5 seconds');
+    } else {
+      console.error('[Google Indexing] Error:', error);
+    }
+    
+    const cleanDomain = domain.replace(/^https?:\/\//, '').replace(/\/$/, '').split('/')[0];
+    const searchQuery = `site:${cleanDomain}`;
+    const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}`;
+    
+    return { indexed: null, query: searchQuery, searchUrl };
   }
 }
 
@@ -470,8 +540,15 @@ export async function analyzeSEO(websiteUrl: string): Promise<SEOAnalysisResult>
       });
     }
 
-    // Indexación Google
-    if (indexingResult.indexed > 0) {
+    // Indexación Google - Con fallback gracioso
+    if (indexingResult.indexed === null) {
+      // No pudimos verificar automáticamente - fallback gracioso
+      technicalChecks.push({
+        name: 'Indexación Google',
+        status: 'warning' as const,
+        message: `No pudimos verificar automáticamente la indexación. Comprueba manualmente buscando "${indexingResult.query}" en Google o haz clic aquí: ${indexingResult.searchUrl}`,
+      });
+    } else if (indexingResult.indexed > 0) {
       technicalChecks.push({
         name: 'Indexación Google',
         status: 'success' as const,
