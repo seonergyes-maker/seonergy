@@ -4,6 +4,7 @@ import { db } from "./db";
 import { seoAnalysis } from "@shared/schema";
 import { insertSeoAnalysisSchema } from "@shared/schema";
 import { eq } from "drizzle-orm";
+import { analyzeSEO } from "./seo-analyzer";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
@@ -21,6 +22,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin login
   app.post("/api/admin/login", checkAdminAuth, (req: Request, res: Response) => {
     res.json({ success: true, message: "Autenticación exitosa" });
+  });
+
+  // Analyze website SEO (real-time analysis)
+  app.post("/api/analyze-seo", async (req: Request, res: Response) => {
+    try {
+      const { website } = req.body;
+      
+      if (!website) {
+        return res.status(400).json({ error: "URL de sitio web requerida" });
+      }
+
+      const analysis = await analyzeSEO(website);
+      res.json(analysis);
+    } catch (error: any) {
+      console.error("Error analyzing website:", error);
+      res.status(500).json({ error: error.message || "Error al analizar el sitio web" });
+    }
   });
 
   // Save SEO analysis
