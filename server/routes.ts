@@ -1,11 +1,14 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { db } from "./db";
-import { seoAnalysis, contactMessages } from "@shared/schema";
-import { insertSeoAnalysisSchema, insertContactMessageSchema } from "@shared/schema";
-import { eq } from "drizzle-orm";
+import { seoAnalysis, contactMessages, projects } from "@shared/schema";
+import { insertSeoAnalysisSchema, insertContactMessageSchema, insertProjectSchema } from "@shared/schema";
+import { eq, desc } from "drizzle-orm";
 import { analyzeSEO } from "./seo-analyzer";
 import { generateAntispamToken, validateAntispam } from "./antispam";
+import { upload } from "./upload";
+import { promises as fs } from "fs";
+import path from "path";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
@@ -198,6 +201,150 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await db
         .delete(contactMessages)
         .where(eq(contactMessages.id, id));
+      
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // ===== PROJECTS =====
+
+  // Get all active projects (public)
+  app.get("/api/projects", async (req: Request, res: Response) => {
+    try {
+      const projectsList = await db
+        .select()
+        .from(projects)
+        .where(eq(projects.isActive, 1))
+        .orderBy(projects.displayOrder);
+      
+      res.json(projectsList);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Get all projects (admin only - includes inactive)
+  app.post("/api/admin/projects", checkAdminAuth, async (req: Request, res: Response) => {
+    try {
+      const projectsList = await db
+        .select()
+        .from(projects)
+        .orderBy(projects.displayOrder);
+      
+      res.json(projectsList);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Create project with image (admin only)
+  app.post("/api/admin/projects/create", checkAdminAuth, upload.single('image'), async (req: Request, res: Response) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "Se requiere una imagen" });
+      }
+
+      const { title, category, description, externalLink, displayOrder, isActive } = req.body;
+      const imagePath = `/uploads/projects/${req.file.filename}`;
+
+      const projectData = {
+        title,
+        category,
+        description,
+        imagePath,
+        externalLink: externalLink || null,
+        displayOrder: displayOrder ? parseInt(displayOrder) : 0,
+        isActive: isActive === 'true' || isActive === '1' ? 1 : 0,
+      };
+
+      const [result] = await db.insert(projects).values(projectData);
+      const [newProject] = await db
+        .select()
+        .from(projects)
+        .where(eq(projects.id, result.insertId));
+      
+      res.json(newProject);
+    } catch (error: any) {
+      console.error("Error creating project:", error);
+      if (req.file) {
+        await fs.unlink(path.join(process.cwd(), 'uploads', 'projects', req.file.filename)).catch(() => {});
+      }
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Update project (admin only)
+  app.patch("/api/admin/projects/:id", checkAdminAuth, upload.single('image'), async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { title, category, description, externalLink, displayOrder, isActive } = req.body;
+
+      const [existingProject] = await db
+        .select()
+        .from(projects)
+        .where(eq(projects.id, id));
+
+      if (!existingProject) {
+        return res.status(404).json({ error: "Proyecto no encontrado" });
+      }
+
+      const updateData: any = {
+        title,
+        category,
+        description,
+        externalLink: externalLink || null,
+        displayOrder: displayOrder ? parseInt(displayOrder) : existingProject.displayOrder,
+        isActive: isActive === 'true' || isActive === '1' ? 1 : 0,
+      };
+
+      if (req.file) {
+        const oldImagePath = path.join(process.cwd(), existingProject.imagePath.replace('/uploads/', 'uploads/'));
+        await fs.unlink(oldImagePath).catch(() => {});
+        updateData.imagePath = `/uploads/projects/${req.file.filename}`;
+      }
+
+      await db
+        .update(projects)
+        .set(updateData)
+        .where(eq(projects.id, id));
+
+      const [updatedProject] = await db
+        .select()
+        .from(projects)
+        .where(eq(projects.id, id));
+      
+      res.json(updatedProject);
+    } catch (error: any) {
+      console.error("Error updating project:", error);
+      if (req.file) {
+        await fs.unlink(path.join(process.cwd(), 'uploads', 'projects', req.file.filename)).catch(() => {});
+      }
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Delete project (admin only)
+  app.delete("/api/admin/projects/:id", checkAdminAuth, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      
+      const [project] = await db
+        .select()
+        .from(projects)
+        .where(eq(projects.id, id));
+
+      if (!project) {
+        return res.status(404).json({ error: "Proyecto no encontrado" });
+      }
+
+      const imagePath = path.join(process.cwd(), project.imagePath.replace('/uploads/', 'uploads/'));
+      await fs.unlink(imagePath).catch(() => {});
+
+      await db
+        .delete(projects)
+        .where(eq(projects.id, id));
       
       res.json({ success: true });
     } catch (error: any) {
