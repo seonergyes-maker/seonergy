@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Globe, User, Mail, Search, Code, TrendingUp, FileText, ArrowLeft } from "lucide-react";
+import { Globe, User, Mail, Search, Code, TrendingUp, FileText, ArrowLeft, Loader2 } from "lucide-react";
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import ScoreCard from "@/components/seo/ScoreCard";
 import CategorySection from "@/components/seo/CategorySection";
 
@@ -184,7 +184,7 @@ export default function AnalizaTuWeb() {
     setIsAnalyzing(true);
 
     // Simular análisis
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise(resolve => setTimeout(resolve, 3000));
     
     setIsAnalyzing(false);
     setShowResults(true);
@@ -195,278 +195,326 @@ export default function AnalizaTuWeb() {
     setFormData({ website: "", name: "", email: "" });
   };
 
-  if (isAnalyzing) {
-    return (
-      <div className="pt-20 min-h-screen flex items-center justify-center">
-        <div className="text-center max-w-md px-4">
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-            className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full mx-auto mb-6"
-          />
-          <h2 className="font-display text-2xl font-bold mb-4">Analizando tu sitio web...</h2>
-          <p className="text-muted-foreground">
-            Estamos revisando {formData.website}. Esto puede tardar unos segundos.
-          </p>
-        </div>
-      </div>
-    );
-  }
+  const totalScore = mockAnalysisData.scores.technical.current + 
+                     mockAnalysisData.scores.analytics.current + 
+                     mockAnalysisData.scores.legal.current;
+  const maxTotalScore = mockAnalysisData.scores.technical.max + 
+                        mockAnalysisData.scores.analytics.max + 
+                        mockAnalysisData.scores.legal.max;
 
-  if (showResults) {
-    const totalScore = mockAnalysisData.scores.technical.current + 
-                       mockAnalysisData.scores.analytics.current + 
-                       mockAnalysisData.scores.legal.current;
-    const maxTotalScore = mockAnalysisData.scores.technical.max + 
-                          mockAnalysisData.scores.analytics.max + 
-                          mockAnalysisData.scores.legal.max;
-
-    return (
-      <div className="pt-20 min-h-screen">
-        <section className="py-12 md:py-20 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-6xl mx-auto">
-            {/* Header */}
-            <div className="mb-12">
-              <Button
-                variant="ghost"
-                onClick={handleReset}
-                className="mb-6"
-                data-testid="button-back"
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Analizar otra web
-              </Button>
-
-              <div className="flex items-start justify-between gap-4 flex-wrap">
-                <div>
-                  <h1 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
-                    Resultados del análisis SEO
-                  </h1>
-                  <p className="text-lg text-muted-foreground flex items-center gap-2">
-                    <Globe className="w-5 h-5" />
-                    {mockAnalysisData.website}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <div className="text-4xl font-display font-bold text-primary">
-                    {Math.round((totalScore / maxTotalScore) * 100)}%
-                  </div>
-                  <p className="text-sm text-muted-foreground">Puntuación global</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Score Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-              <ScoreCard
-                title="SEO Técnico"
-                score={mockAnalysisData.scores.technical.current}
-                maxScore={mockAnalysisData.scores.technical.max}
-                icon={<Code className="w-6 h-6" />}
-              />
-              <ScoreCard
-                title="Analytics & Tracking"
-                score={mockAnalysisData.scores.analytics.current}
-                maxScore={mockAnalysisData.scores.analytics.max}
-                icon={<TrendingUp className="w-6 h-6" />}
-              />
-              <ScoreCard
-                title="Legales (RGPD)"
-                score={mockAnalysisData.scores.legal.current}
-                maxScore={mockAnalysisData.scores.legal.max}
-                icon={<FileText className="w-6 h-6" />}
-              />
-            </div>
-
-            {/* Priority Actions */}
-            <div className="bg-gradient-to-br from-red-500/10 to-red-500/5 border border-red-500/20 rounded-xl p-6 mb-12">
-              <h2 className="font-display text-xl font-bold mb-4 flex items-center gap-2">
-                <span className="text-red-500">⚠️</span>
-                Acciones prioritarias
-              </h2>
-              <ul className="space-y-2 text-sm">
-                <li className="flex items-start gap-2">
-                  <span className="text-red-500 font-bold">1.</span>
-                  <span>Crear archivo robots.txt y sitemap.xml</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-red-500 font-bold">2.</span>
-                  <span>Implementar banner de consentimiento de cookies (RGPD)</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-red-500 font-bold">3.</span>
-                  <span>Instalar Google Analytics 4 y configurar eventos de conversión</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-red-500 font-bold">4.</span>
-                  <span>Optimizar velocidad de carga (Core Web Vitals)</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-red-500 font-bold">5.</span>
-                  <span>Añadir Schema LocalBusiness</span>
-                </li>
-              </ul>
-            </div>
-
-            {/* Category Sections */}
-            <div className="space-y-6">
-              {mockAnalysisData.categories.map((category, idx) => (
-                <CategorySection
-                  key={idx}
-                  title={category.title}
-                  description={category.description}
-                  icon={category.icon}
-                  subcategories={category.subcategories}
-                  defaultOpen={idx === 0}
-                />
-              ))}
-            </div>
-
-            {/* CTA Section */}
-            <div className="mt-12 bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 rounded-xl p-8 text-center">
-              <h2 className="font-display text-2xl md:text-3xl font-bold mb-4">
-                ¿Necesitas ayuda para mejorar tu SEO?
-              </h2>
-              <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-                Nuestro equipo puede ayudarte a resolver estos problemas y llevar tu web al siguiente nivel.
-              </p>
-              <Button size="lg" data-testid="button-contact-cta">
-                Solicitar consultoría gratuita
-              </Button>
-            </div>
-          </div>
-        </section>
-      </div>
-    );
-  }
-
-  // Formulario inicial
   return (
     <div className="pt-20 min-h-screen">
-      <section className="py-20 md:py-32 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center justify-center p-4 bg-primary/10 rounded-full mb-6">
-              <Search className="w-8 h-8 text-primary" />
-            </div>
-            <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-              Analiza tu Web
-            </h1>
-            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Descubre oportunidades de mejora SEO para tu sitio web. Recibirás un análisis completo con recomendaciones personalizadas.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
-            <div className="bg-card border border-border rounded-lg p-6 text-center">
-              <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Search className="w-6 h-6 text-primary" />
-              </div>
-              <h3 className="font-display font-bold mb-2">Análisis Completo</h3>
-              <p className="text-sm text-muted-foreground">
-                Evaluamos más de 50 factores SEO
+      <AnimatePresence mode="wait">
+        {/* Estado: Analizando */}
+        {isAnalyzing && (
+          <motion.section
+            key="analyzing"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="py-20 md:py-32 px-4 sm:px-6 lg:px-8 flex items-center justify-center min-h-[calc(100vh-5rem)]"
+          >
+            <div className="text-center max-w-md">
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                className="w-20 h-20 mx-auto mb-8"
+              >
+                <Loader2 className="w-full h-full text-primary" />
+              </motion.div>
+              <h2 className="font-display text-3xl md:text-4xl font-bold mb-4">
+                Analizando tu sitio web
+              </h2>
+              <p className="text-lg text-muted-foreground mb-6">
+                Estamos revisando <span className="text-primary font-semibold">{formData.website}</span>
               </p>
-            </div>
-            <div className="bg-card border border-border rounded-lg p-6 text-center">
-              <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Globe className="w-6 h-6 text-primary" />
+              <div className="space-y-2 text-sm text-muted-foreground">
+                <motion.p
+                  initial={{ opacity: 0.5 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 1, repeat: Infinity, repeatType: "reverse" }}
+                >
+                  ✓ Verificando rastreo e indexación...
+                </motion.p>
+                <motion.p
+                  initial={{ opacity: 0.5 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 1, delay: 0.3, repeat: Infinity, repeatType: "reverse" }}
+                >
+                  ✓ Analizando rendimiento...
+                </motion.p>
+                <motion.p
+                  initial={{ opacity: 0.5 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 1, delay: 0.6, repeat: Infinity, repeatType: "reverse" }}
+                >
+                  ✓ Evaluando analytics y tracking...
+                </motion.p>
               </div>
-              <h3 className="font-display font-bold mb-2">Rápido y Gratuito</h3>
-              <p className="text-sm text-muted-foreground">
-                Resultados instantáneos
-              </p>
             </div>
-            <div className="bg-card border border-border rounded-lg p-6 text-center">
-              <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Mail className="w-6 h-6 text-primary" />
+          </motion.section>
+        )}
+
+        {/* Estado: Resultados */}
+        {!isAnalyzing && showResults && (
+          <motion.section
+            key="results"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.4 }}
+            className="py-12 md:py-20 px-4 sm:px-6 lg:px-8"
+          >
+            <div className="max-w-6xl mx-auto">
+              {/* Header */}
+              <div className="mb-12">
+                <Button
+                  variant="ghost"
+                  onClick={handleReset}
+                  className="mb-6"
+                  data-testid="button-back"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Analizar otra web
+                </Button>
+
+                <div className="flex items-start justify-between gap-4 flex-wrap">
+                  <div>
+                    <h1 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
+                      Resultados del análisis SEO
+                    </h1>
+                    <p className="text-lg text-muted-foreground flex items-center gap-2">
+                      <Globe className="w-5 h-5" />
+                      {mockAnalysisData.website}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-4xl font-display font-bold text-primary">
+                      {Math.round((totalScore / maxTotalScore) * 100)}%
+                    </div>
+                    <p className="text-sm text-muted-foreground">Puntuación global</p>
+                  </div>
+                </div>
               </div>
-              <h3 className="font-display font-bold mb-2">Informe Detallado</h3>
-              <p className="text-sm text-muted-foreground">
-                Recomendaciones accionables
-              </p>
-            </div>
-          </div>
 
-          <div className="bg-gradient-to-b from-card to-background border border-border rounded-2xl p-8 md:p-12">
-            <h2 className="font-display text-2xl md:text-3xl font-bold mb-8 text-center">
-              Solicita tu análisis gratuito
-            </h2>
-
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2">
-                <label htmlFor="website" className="text-sm font-medium flex items-center gap-2">
-                  <Globe className="w-4 h-4 text-primary" />
-                  URL de tu sitio web
-                </label>
-                <Input
-                  id="website"
-                  name="website"
-                  type="url"
-                  placeholder="https://tuweb.com"
-                  required
-                  value={formData.website}
-                  onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-                  data-testid="input-website"
-                  className="h-12"
+              {/* Score Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                <ScoreCard
+                  title="SEO Técnico"
+                  score={mockAnalysisData.scores.technical.current}
+                  maxScore={mockAnalysisData.scores.technical.max}
+                  icon={<Code className="w-6 h-6" />}
+                />
+                <ScoreCard
+                  title="Analytics & Tracking"
+                  score={mockAnalysisData.scores.analytics.current}
+                  maxScore={mockAnalysisData.scores.analytics.max}
+                  icon={<TrendingUp className="w-6 h-6" />}
+                />
+                <ScoreCard
+                  title="Legales (RGPD)"
+                  score={mockAnalysisData.scores.legal.current}
+                  maxScore={mockAnalysisData.scores.legal.max}
+                  icon={<FileText className="w-6 h-6" />}
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label htmlFor="name" className="text-sm font-medium flex items-center gap-2">
-                    <User className="w-4 h-4 text-primary" />
-                    Nombre
-                  </label>
-                  <Input
-                    id="name"
-                    name="name"
-                    type="text"
-                    placeholder="Tu nombre"
-                    required
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    data-testid="input-name"
-                    className="h-12"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label htmlFor="email" className="text-sm font-medium flex items-center gap-2">
-                    <Mail className="w-4 h-4 text-primary" />
-                    Email
-                  </label>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    placeholder="tu@email.com"
-                    required
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    data-testid="input-email"
-                    className="h-12"
-                  />
-                </div>
+              {/* Priority Actions */}
+              <div className="bg-gradient-to-br from-red-500/10 to-red-500/5 border border-red-500/20 rounded-xl p-6 mb-12">
+                <h2 className="font-display text-xl font-bold mb-4 flex items-center gap-2">
+                  <span className="text-red-500">⚠️</span>
+                  Acciones prioritarias
+                </h2>
+                <ul className="space-y-2 text-sm">
+                  <li className="flex items-start gap-2">
+                    <span className="text-red-500 font-bold">1.</span>
+                    <span>Crear archivo robots.txt y sitemap.xml</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-red-500 font-bold">2.</span>
+                    <span>Implementar banner de consentimiento de cookies (RGPD)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-red-500 font-bold">3.</span>
+                    <span>Instalar Google Analytics 4 y configurar eventos de conversión</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-red-500 font-bold">4.</span>
+                    <span>Optimizar velocidad de carga (Core Web Vitals)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-red-500 font-bold">5.</span>
+                    <span>Añadir Schema LocalBusiness</span>
+                  </li>
+                </ul>
               </div>
 
-              <div className="text-center pt-4">
-                <Button
-                  type="submit"
-                  size="lg"
-                  data-testid="button-submit"
-                  className="px-12 py-6 text-lg"
-                >
-                  Analizar mi web
+              {/* Category Sections */}
+              <div className="space-y-6">
+                {mockAnalysisData.categories.map((category, idx) => (
+                  <CategorySection
+                    key={idx}
+                    title={category.title}
+                    description={category.description}
+                    icon={category.icon}
+                    subcategories={category.subcategories}
+                    defaultOpen={idx === 0}
+                  />
+                ))}
+              </div>
+
+              {/* CTA Section */}
+              <div className="mt-12 bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 rounded-xl p-8 text-center">
+                <h2 className="font-display text-2xl md:text-3xl font-bold mb-4">
+                  ¿Necesitas ayuda para mejorar tu SEO?
+                </h2>
+                <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
+                  Nuestro equipo puede ayudarte a resolver estos problemas y llevar tu web al siguiente nivel.
+                </p>
+                <Button size="lg" data-testid="button-contact-cta">
+                  Solicitar consultoría gratuita
                 </Button>
               </div>
+            </div>
+          </motion.section>
+        )}
 
-              <p className="text-xs text-center text-muted-foreground mt-4">
-                Al enviar este formulario, aceptas nuestra política de privacidad
-              </p>
-            </form>
-          </div>
-        </div>
-      </section>
+        {/* Estado: Formulario inicial */}
+        {!isAnalyzing && !showResults && (
+          <motion.section
+            key="form"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.4 }}
+            className="py-20 md:py-32 px-4 sm:px-6 lg:px-8"
+          >
+            <div className="max-w-4xl mx-auto">
+              <div className="text-center mb-16">
+                <div className="inline-flex items-center justify-center p-4 bg-primary/10 rounded-full mb-6">
+                  <Search className="w-8 h-8 text-primary" />
+                </div>
+                <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
+                  Analiza tu Web
+                </h1>
+                <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+                  Descubre oportunidades de mejora SEO para tu sitio web. Recibirás un análisis completo con recomendaciones personalizadas.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+                <div className="bg-card border border-border rounded-lg p-6 text-center">
+                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Search className="w-6 h-6 text-primary" />
+                  </div>
+                  <h3 className="font-display font-bold mb-2">Análisis Completo</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Evaluamos más de 50 factores SEO
+                  </p>
+                </div>
+                <div className="bg-card border border-border rounded-lg p-6 text-center">
+                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Globe className="w-6 h-6 text-primary" />
+                  </div>
+                  <h3 className="font-display font-bold mb-2">Rápido y Gratuito</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Resultados instantáneos
+                  </p>
+                </div>
+                <div className="bg-card border border-border rounded-lg p-6 text-center">
+                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Mail className="w-6 h-6 text-primary" />
+                  </div>
+                  <h3 className="font-display font-bold mb-2">Informe Detallado</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Recomendaciones accionables
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-gradient-to-b from-card to-background border border-border rounded-2xl p-8 md:p-12">
+                <h2 className="font-display text-2xl md:text-3xl font-bold mb-8 text-center">
+                  Solicita tu análisis gratuito
+                </h2>
+
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div className="space-y-2">
+                    <label htmlFor="website" className="text-sm font-medium flex items-center gap-2">
+                      <Globe className="w-4 h-4 text-primary" />
+                      URL de tu sitio web
+                    </label>
+                    <Input
+                      id="website"
+                      name="website"
+                      type="url"
+                      placeholder="https://tuweb.com"
+                      required
+                      value={formData.website}
+                      onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                      data-testid="input-website"
+                      className="h-12"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label htmlFor="name" className="text-sm font-medium flex items-center gap-2">
+                        <User className="w-4 h-4 text-primary" />
+                        Nombre
+                      </label>
+                      <Input
+                        id="name"
+                        name="name"
+                        type="text"
+                        placeholder="Tu nombre"
+                        required
+                        value={formData.name}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        data-testid="input-name"
+                        className="h-12"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label htmlFor="email" className="text-sm font-medium flex items-center gap-2">
+                        <Mail className="w-4 h-4 text-primary" />
+                        Email
+                      </label>
+                      <Input
+                        id="email"
+                        name="email"
+                        type="email"
+                        placeholder="tu@email.com"
+                        required
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        data-testid="input-email"
+                        className="h-12"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="text-center pt-4">
+                    <Button
+                      type="submit"
+                      size="lg"
+                      data-testid="button-submit"
+                      className="px-12 py-6 text-lg"
+                    >
+                      Analizar mi web
+                    </Button>
+                  </div>
+
+                  <p className="text-xs text-center text-muted-foreground mt-4">
+                    Al enviar este formulario, aceptas nuestra política de privacidad
+                  </p>
+                </form>
+              </div>
+            </div>
+          </motion.section>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
