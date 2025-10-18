@@ -17,6 +17,10 @@ import AnalizaTuWeb from "@/pages/AnalizaTuWeb";
 import Admin from "@/pages/Admin";
 import PoliticaPrivacidad from "@/pages/PoliticaPrivacidad";
 import TerminosUso from "@/pages/TerminosUso";
+import DisenoWeb from "@/pages/services/DisenoWeb";
+import DesarrolloWeb from "@/pages/services/DesarrolloWeb";
+import SEOEstrategico from "@/pages/services/SEOEstrategico";
+import MarketingAds from "@/pages/services/MarketingAds";
 import NotFound from "@/pages/not-found";
 
 function ScrollToTop() {
@@ -41,6 +45,10 @@ function Router() {
       <Switch>
         <Route path="/" component={Home} />
         <Route path="/servicios" component={Servicios} />
+        <Route path="/servicios/diseno-web" component={DisenoWeb} />
+        <Route path="/servicios/desarrollo-web" component={DesarrolloWeb} />
+        <Route path="/servicios/seo-estrategico" component={SEOEstrategico} />
+        <Route path="/servicios/marketing-ads" component={MarketingAds} />
         <Route path="/proyectos" component={Proyectos} />
         <Route path="/proceso" component={Proceso} />
         <Route path="/contacto" component={Contacto} />
