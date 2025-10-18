@@ -1,49 +1,350 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Globe, User, Mail, Search } from "lucide-react";
+import { Globe, User, Mail, Search, Code, TrendingUp, FileText, ArrowLeft } from "lucide-react";
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { motion } from "framer-motion";
+import ScoreCard from "@/components/seo/ScoreCard";
+import CategorySection from "@/components/seo/CategorySection";
+
+// Datos de ejemplo para mostrar el diseño
+const mockAnalysisData = {
+  website: "https://ejemplo.com",
+  scores: {
+    technical: { current: 12, max: 20 },
+    analytics: { current: 6, max: 12 },
+    legal: { current: 1, max: 3 },
+  },
+  categories: [
+    {
+      title: "SEO Técnico",
+      description: "Rastreo, indexación, arquitectura, rendimiento y estructura del sitio",
+      icon: <Code className="w-6 h-6" />,
+      subcategories: [
+        {
+          title: "Rastreo e indexación",
+          checks: [
+            {
+              title: "robots.txt",
+              message: "No hemos encontrado tu archivo robots.txt. Los buscadores no tienen instrucciones de rastreo.",
+              status: "error" as const,
+              solution: "Crea un archivo robots.txt en la raíz de tu dominio con las directivas básicas de rastreo.",
+            },
+            {
+              title: "Sitemap XML",
+              message: "No has publicado un sitemap XML. Google tardará más en descubrir tus páginas.",
+              status: "error" as const,
+              solution: "Genera un sitemap.xml y súbelo a Search Console.",
+            },
+            {
+              title: "Canónicos",
+              message: "Detectamos canónicos relativos en lugar de absolutos. Usa URLs completas (https://...).",
+              status: "warning" as const,
+              solution: "Cambia todas las etiquetas canonical a URLs absolutas.",
+            },
+          ],
+        },
+        {
+          title: "Arquitectura y URLs",
+          checks: [
+            {
+              title: "Estructura de URLs",
+              message: "Slugs largos o con parámetros innecesarios. Simplifícalos y hazlos legibles.",
+              status: "warning" as const,
+              solution: "Revisa y simplifica las URLs, eliminando parámetros innecesarios.",
+            },
+          ],
+        },
+        {
+          title: "HTML semántico y metadatos",
+          checks: [
+            {
+              title: "Títulos & Metadescripciones",
+              message: "Páginas sin title único. Es básico para posicionar.",
+              status: "error" as const,
+              solution: "Asigna títulos únicos y descriptivos a cada página (50-60 caracteres).",
+            },
+            {
+              title: "Encabezados",
+              message: "Hay páginas con más de un H1 o sin H1. Define un único H1 por página.",
+              status: "warning" as const,
+            },
+          ],
+        },
+        {
+          title: "Datos estructurados (Schema)",
+          checks: [
+            {
+              title: "Marcado de negocio",
+              message: "No detectamos Schema de negocio local. Añade LocalBusiness con dirección y teléfono.",
+              status: "error" as const,
+              solution: "Implementa Schema.org LocalBusiness con tus datos NAP.",
+            },
+          ],
+        },
+        {
+          title: "Rendimiento & Core Web Vitals",
+          checks: [
+            {
+              title: "Velocidad en móvil",
+              message: "Tu LCP supera 2,5 s en móvil. Optimiza imágenes y carga crítica.",
+              status: "error" as const,
+              solution: "Optimiza imágenes (WebP/AVIF), implementa lazy loading y mejora el servidor.",
+            },
+            {
+              title: "Carga de recursos",
+              message: "Demasiados scripts bloqueando el render. Diféralos o elimínalos.",
+              status: "warning" as const,
+            },
+          ],
+        },
+      ],
+    },
+    {
+      title: "Analytics, Tracking & Consentimiento",
+      description: "Google Analytics, Tag Manager, eventos de conversión y RGPD",
+      icon: <TrendingUp className="w-6 h-6" />,
+      subcategories: [
+        {
+          title: "Consentimiento (CMP + Consent Mode v2)",
+          checks: [
+            {
+              title: "Banner de cookies",
+              message: "No detectamos un banner de consentimiento (CMP). Es obligatorio antes de cargar cookies no esenciales.",
+              status: "error" as const,
+              solution: "Implementa un CMP que cumpla con RGPD y configure Consent Mode v2.",
+            },
+            {
+              title: "Estados de consentimiento",
+              message: "Etiquetas de análisis/marketing cargan sin consentimiento. Incumple el RGPD.",
+              status: "error" as const,
+            },
+          ],
+        },
+        {
+          title: "Google Tag Manager",
+          checks: [
+            {
+              title: "Estructura de contenedor",
+              message: "No hemos encontrado GTM o está mal implementado. Centraliza el etiquetado para evitar duplicados.",
+              status: "warning" as const,
+              solution: "Instala GTM y migra todas tus etiquetas al contenedor.",
+            },
+          ],
+        },
+        {
+          title: "Google Analytics 4",
+          checks: [
+            {
+              title: "Implementación base",
+              message: "GA4 no está instalado o no registra visitas. No podrás medir resultados.",
+              status: "error" as const,
+              solution: "Configura GA4 con tu ID de medición y verifica que page_view se dispara.",
+            },
+            {
+              title: "Conversiones",
+              message: "Tus eventos de conversión (leads) no están configurados. No medimos oportunidades reales.",
+              status: "error" as const,
+            },
+          ],
+        },
+      ],
+    },
+    {
+      title: "Legales (RGPD) relacionados con Tracking",
+      description: "Políticas de privacidad, cookies y cumplimiento legal",
+      icon: <FileText className="w-6 h-6" />,
+      subcategories: [
+        {
+          title: "Páginas y cláusulas",
+          checks: [
+            {
+              title: "Política de cookies y privacidad",
+              message: "Falta Política de cookies o Privacidad actualizada. Requisito legal en España.",
+              status: "error" as const,
+              solution: "Crea páginas de Política de Privacidad y Política de Cookies actualizadas al RGPD.",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+};
 
 export default function AnalizaTuWeb() {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast();
+  const [showResults, setShowResults] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [formData, setFormData] = useState({
+    website: "",
+    name: "",
+    email: "",
+  });
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsSubmitting(true);
+    setIsAnalyzing(true);
 
-    const formData = new FormData(e.currentTarget);
-    const data = {
-      website: formData.get("website"),
-      name: formData.get("name"),
-      email: formData.get("email"),
-    };
-
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      toast({
-        title: "¡Solicitud enviada!",
-        description: "Analizaremos tu web y te enviaremos el informe completo por email.",
-      });
-      
-      (e.target as HTMLFormElement).reset();
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Hubo un problema al enviar la solicitud. Inténtalo de nuevo.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+    // Simular análisis
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    setIsAnalyzing(false);
+    setShowResults(true);
   };
 
+  const handleReset = () => {
+    setShowResults(false);
+    setFormData({ website: "", name: "", email: "" });
+  };
+
+  if (isAnalyzing) {
+    return (
+      <div className="pt-20 min-h-screen flex items-center justify-center">
+        <div className="text-center max-w-md px-4">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+            className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full mx-auto mb-6"
+          />
+          <h2 className="font-display text-2xl font-bold mb-4">Analizando tu sitio web...</h2>
+          <p className="text-muted-foreground">
+            Estamos revisando {formData.website}. Esto puede tardar unos segundos.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (showResults) {
+    const totalScore = mockAnalysisData.scores.technical.current + 
+                       mockAnalysisData.scores.analytics.current + 
+                       mockAnalysisData.scores.legal.current;
+    const maxTotalScore = mockAnalysisData.scores.technical.max + 
+                          mockAnalysisData.scores.analytics.max + 
+                          mockAnalysisData.scores.legal.max;
+
+    return (
+      <div className="pt-20 min-h-screen">
+        <section className="py-12 md:py-20 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-6xl mx-auto">
+            {/* Header */}
+            <div className="mb-12">
+              <Button
+                variant="ghost"
+                onClick={handleReset}
+                className="mb-6"
+                data-testid="button-back"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Analizar otra web
+              </Button>
+
+              <div className="flex items-start justify-between gap-4 flex-wrap">
+                <div>
+                  <h1 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
+                    Resultados del análisis SEO
+                  </h1>
+                  <p className="text-lg text-muted-foreground flex items-center gap-2">
+                    <Globe className="w-5 h-5" />
+                    {mockAnalysisData.website}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <div className="text-4xl font-display font-bold text-primary">
+                    {Math.round((totalScore / maxTotalScore) * 100)}%
+                  </div>
+                  <p className="text-sm text-muted-foreground">Puntuación global</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Score Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+              <ScoreCard
+                title="SEO Técnico"
+                score={mockAnalysisData.scores.technical.current}
+                maxScore={mockAnalysisData.scores.technical.max}
+                icon={<Code className="w-6 h-6" />}
+              />
+              <ScoreCard
+                title="Analytics & Tracking"
+                score={mockAnalysisData.scores.analytics.current}
+                maxScore={mockAnalysisData.scores.analytics.max}
+                icon={<TrendingUp className="w-6 h-6" />}
+              />
+              <ScoreCard
+                title="Legales (RGPD)"
+                score={mockAnalysisData.scores.legal.current}
+                maxScore={mockAnalysisData.scores.legal.max}
+                icon={<FileText className="w-6 h-6" />}
+              />
+            </div>
+
+            {/* Priority Actions */}
+            <div className="bg-gradient-to-br from-red-500/10 to-red-500/5 border border-red-500/20 rounded-xl p-6 mb-12">
+              <h2 className="font-display text-xl font-bold mb-4 flex items-center gap-2">
+                <span className="text-red-500">⚠️</span>
+                Acciones prioritarias
+              </h2>
+              <ul className="space-y-2 text-sm">
+                <li className="flex items-start gap-2">
+                  <span className="text-red-500 font-bold">1.</span>
+                  <span>Crear archivo robots.txt y sitemap.xml</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-red-500 font-bold">2.</span>
+                  <span>Implementar banner de consentimiento de cookies (RGPD)</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-red-500 font-bold">3.</span>
+                  <span>Instalar Google Analytics 4 y configurar eventos de conversión</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-red-500 font-bold">4.</span>
+                  <span>Optimizar velocidad de carga (Core Web Vitals)</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-red-500 font-bold">5.</span>
+                  <span>Añadir Schema LocalBusiness</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* Category Sections */}
+            <div className="space-y-6">
+              {mockAnalysisData.categories.map((category, idx) => (
+                <CategorySection
+                  key={idx}
+                  title={category.title}
+                  description={category.description}
+                  icon={category.icon}
+                  subcategories={category.subcategories}
+                  defaultOpen={idx === 0}
+                />
+              ))}
+            </div>
+
+            {/* CTA Section */}
+            <div className="mt-12 bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 rounded-xl p-8 text-center">
+              <h2 className="font-display text-2xl md:text-3xl font-bold mb-4">
+                ¿Necesitas ayuda para mejorar tu SEO?
+              </h2>
+              <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
+                Nuestro equipo puede ayudarte a resolver estos problemas y llevar tu web al siguiente nivel.
+              </p>
+              <Button size="lg" data-testid="button-contact-cta">
+                Solicitar consultoría gratuita
+              </Button>
+            </div>
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  // Formulario inicial
   return (
     <div className="pt-20 min-h-screen">
       <section className="py-20 md:py-32 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
-          {/* Header */}
           <div className="text-center mb-16">
             <div className="inline-flex items-center justify-center p-4 bg-primary/10 rounded-full mb-6">
               <Search className="w-8 h-8 text-primary" />
@@ -52,11 +353,10 @@ export default function AnalizaTuWeb() {
               Analiza tu Web
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Descubre oportunidades de mejora SEO para tu sitio web. Te enviaremos un análisis completo con recomendaciones personalizadas.
+              Descubre oportunidades de mejora SEO para tu sitio web. Recibirás un análisis completo con recomendaciones personalizadas.
             </p>
           </div>
 
-          {/* Features */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
             <div className="bg-card border border-border rounded-lg p-6 text-center">
               <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -73,7 +373,7 @@ export default function AnalizaTuWeb() {
               </div>
               <h3 className="font-display font-bold mb-2">Rápido y Gratuito</h3>
               <p className="text-sm text-muted-foreground">
-                Resultados en menos de 24 horas
+                Resultados instantáneos
               </p>
             </div>
             <div className="bg-card border border-border rounded-lg p-6 text-center">
@@ -87,7 +387,6 @@ export default function AnalizaTuWeb() {
             </div>
           </div>
 
-          {/* Form */}
           <div className="bg-gradient-to-b from-card to-background border border-border rounded-2xl p-8 md:p-12">
             <h2 className="font-display text-2xl md:text-3xl font-bold mb-8 text-center">
               Solicita tu análisis gratuito
@@ -105,6 +404,8 @@ export default function AnalizaTuWeb() {
                   type="url"
                   placeholder="https://tuweb.com"
                   required
+                  value={formData.website}
+                  onChange={(e) => setFormData({ ...formData, website: e.target.value })}
                   data-testid="input-website"
                   className="h-12"
                 />
@@ -122,6 +423,8 @@ export default function AnalizaTuWeb() {
                     type="text"
                     placeholder="Tu nombre"
                     required
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     data-testid="input-name"
                     className="h-12"
                   />
@@ -138,6 +441,8 @@ export default function AnalizaTuWeb() {
                     type="email"
                     placeholder="tu@email.com"
                     required
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     data-testid="input-email"
                     className="h-12"
                   />
@@ -148,11 +453,10 @@ export default function AnalizaTuWeb() {
                 <Button
                   type="submit"
                   size="lg"
-                  disabled={isSubmitting}
                   data-testid="button-submit"
                   className="px-12 py-6 text-lg"
                 >
-                  {isSubmitting ? "Procesando..." : "Analizar mi web"}
+                  Analizar mi web
                 </Button>
               </div>
 
@@ -160,21 +464,6 @@ export default function AnalizaTuWeb() {
                 Al enviar este formulario, aceptas nuestra política de privacidad
               </p>
             </form>
-          </div>
-
-          {/* Additional Info */}
-          <div className="mt-16 text-center">
-            <h3 className="font-display text-xl font-bold mb-4">
-              ¿Qué incluye el análisis?
-            </h3>
-            <ul className="text-muted-foreground space-y-2 max-w-2xl mx-auto">
-              <li>✓ Análisis técnico SEO completo</li>
-              <li>✓ Evaluación de velocidad de carga</li>
-              <li>✓ Revisión de metadatos y estructura</li>
-              <li>✓ Análisis de contenido y palabras clave</li>
-              <li>✓ Recomendaciones priorizadas</li>
-              <li>✓ Consulta gratuita de 15 minutos</li>
-            </ul>
           </div>
         </div>
       </section>
