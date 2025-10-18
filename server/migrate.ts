@@ -53,6 +53,31 @@ async function runMigrations() {
       console.log('[Migration] contact_messages table already exists');
     }
 
+    // Check if projects table exists
+    const [projectsTables] = await connection.query(
+      "SHOW TABLES LIKE 'projects'"
+    );
+    
+    if ((projectsTables as any[]).length === 0) {
+      console.log('[Migration] Creating projects table...');
+      await connection.query(`
+        CREATE TABLE projects (
+          id INT PRIMARY KEY AUTO_INCREMENT,
+          title VARCHAR(255) NOT NULL,
+          category VARCHAR(100) NOT NULL,
+          description TEXT NOT NULL,
+          image_path VARCHAR(500) NOT NULL,
+          external_link VARCHAR(500),
+          display_order INT NOT NULL DEFAULT 0,
+          is_active TINYINT NOT NULL DEFAULT 1,
+          created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+      console.log('[Migration] ✓ projects table created');
+    } else {
+      console.log('[Migration] projects table already exists');
+    }
+
     console.log('[Migration] All migrations completed successfully');
   } catch (error) {
     console.error('[Migration] Error running migrations:', error);
