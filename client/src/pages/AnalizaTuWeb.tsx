@@ -184,6 +184,7 @@ export default function AnalizaTuWeb() {
   const [showResults, setShowResults] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [currentAnalysisId, setCurrentAnalysisId] = useState<string | null>(null);
+  const [analysisResults, setAnalysisResults] = useState<any>(null);
   const [formData, setFormData] = useState({
     website: "",
     name: "",
@@ -212,6 +213,9 @@ export default function AnalizaTuWeb() {
         name: loadedAnalysis.name,
         email: loadedAnalysis.email,
       });
+      // Parse results from database
+      const parsedResults = JSON.parse(loadedAnalysis.results);
+      setAnalysisResults(parsedResults);
     }
   }, [loadedAnalysis, showResults]);
 
@@ -236,38 +240,59 @@ export default function AnalizaTuWeb() {
     e.preventDefault();
     setIsAnalyzing(true);
 
-    // Simular análisis
-    await new Promise(resolve => setTimeout(resolve, 3000));
-    
-    // Generate unique ID
-    const uniqueId = Date.now().toString(36) + Math.random().toString(36).substr(2);
-    
-    // Save to database
-    await saveAnalysisMutation.mutateAsync({
-      uniqueId,
-      website: formData.website,
-      name: formData.name,
-      email: formData.email,
-      results: JSON.stringify(mockAnalysisData),
-    });
-    
-    setIsAnalyzing(false);
-    setShowResults(true);
+    try {
+      // Perform real SEO analysis
+      const analysisResponse = await fetch('/api/analyze-seo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ website: formData.website }),
+      });
+
+      if (!analysisResponse.ok) {
+        throw new Error('Failed to analyze website');
+      }
+
+      const analysisData = await analysisResponse.json();
+      setAnalysisResults(analysisData);
+      
+      // Generate unique ID
+      const uniqueId = Date.now().toString(36) + Math.random().toString(36).substr(2);
+      
+      // Save to database
+      await saveAnalysisMutation.mutateAsync({
+        uniqueId,
+        website: formData.website,
+        name: formData.name,
+        email: formData.email,
+        results: JSON.stringify(analysisData),
+      });
+      
+      setShowResults(true);
+    } catch (error) {
+      console.error('Error analyzing website:', error);
+      alert('Error al analizar el sitio web. Por favor, verifica la URL e intenta de nuevo.');
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   const handleReset = () => {
     setShowResults(false);
     setCurrentAnalysisId(null);
+    setAnalysisResults(null);
     setFormData({ website: "", name: "", email: "" });
     window.location.hash = "";
   };
 
-  const totalScore = mockAnalysisData.scores.technical.current + 
-                     mockAnalysisData.scores.analytics.current + 
-                     mockAnalysisData.scores.legal.current;
-  const maxTotalScore = mockAnalysisData.scores.technical.max + 
-                        mockAnalysisData.scores.analytics.max + 
-                        mockAnalysisData.scores.legal.max;
+  // Use real analysis results or fallback to mock data
+  const displayData = analysisResults || mockAnalysisData;
+  
+  const totalScore = displayData.scores.technical.current + 
+                     displayData.scores.analytics.current + 
+                     displayData.scores.legal.current;
+  const maxTotalScore = displayData.scores.technical.max + 
+                        displayData.scores.analytics.max + 
+                        displayData.scores.legal.max;
 
   return (
     <div className="pt-20 min-h-screen">
@@ -353,7 +378,7 @@ export default function AnalizaTuWeb() {
                     </h1>
                     <p className="text-lg text-muted-foreground flex items-center gap-2">
                       <Globe className="w-5 h-5" />
-                      {mockAnalysisData.website}
+                      {displayData.website}
                     </p>
                   </div>
                   <div className="text-right">
@@ -369,71 +394,128 @@ export default function AnalizaTuWeb() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
                 <ScoreCard
                   title="SEO Técnico"
-                  score={mockAnalysisData.scores.technical.current}
-                  maxScore={mockAnalysisData.scores.technical.max}
+                  score={displayData.scores.technical.current}
+                  maxScore={displayData.scores.technical.max}
                   icon={<Code className="w-6 h-6" />}
                 />
                 <ScoreCard
                   title="Analytics & Tracking"
-                  score={mockAnalysisData.scores.analytics.current}
-                  maxScore={mockAnalysisData.scores.analytics.max}
+                  score={displayData.scores.analytics.current}
+                  maxScore={displayData.scores.analytics.max}
                   icon={<TrendingUp className="w-6 h-6" />}
                 />
                 <ScoreCard
                   title="Legales (RGPD)"
-                  score={mockAnalysisData.scores.legal.current}
-                  maxScore={mockAnalysisData.scores.legal.max}
+                  score={displayData.scores.legal.current}
+                  maxScore={displayData.scores.legal.max}
                   icon={<FileText className="w-6 h-6" />}
                 />
               </div>
 
-              {/* Priority Actions */}
-              <div className="bg-gradient-to-br from-red-500/10 to-red-500/5 border border-red-500/20 rounded-xl p-6 mb-12">
-                <h2 className="font-display text-xl font-bold mb-4 flex items-center gap-2">
-                  <span className="text-red-500">⚠️</span>
-                  Acciones prioritarias
-                </h2>
-                <ul className="space-y-2 text-sm">
-                  <li className="flex items-start gap-2">
-                    <span className="text-red-500 font-bold">1.</span>
-                    <span>Resolver problema de indexación: solo 3 de 47 páginas están en Google</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-red-500 font-bold">2.</span>
-                    <span>Crear archivo robots.txt y sitemap.xml</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-red-500 font-bold">3.</span>
-                    <span>Implementar banner de consentimiento de cookies (RGPD)</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-red-500 font-bold">4.</span>
-                    <span>Instalar Google Analytics 4 y configurar eventos de conversión</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-red-500 font-bold">5.</span>
-                    <span>Optimizar velocidad de carga (Core Web Vitals)</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-red-500 font-bold">6.</span>
-                    <span>Añadir Schema LocalBusiness para negocio local</span>
-                  </li>
-                </ul>
-              </div>
+              {/* Priority Actions - Dynamic based on errors */}
+              {(() => {
+                const errorChecks: any[] = [];
+                if (displayData.categories) {
+                  Object.values(displayData.categories).forEach((category: any) => {
+                    if (category.checks) {
+                      category.checks.forEach((check: any) => {
+                        if (check.status === 'error') {
+                          errorChecks.push(check);
+                        }
+                      });
+                    }
+                  });
+                }
+                
+                return errorChecks.length > 0 ? (
+                  <div className="bg-gradient-to-br from-red-500/10 to-red-500/5 border border-red-500/20 rounded-xl p-6 mb-12">
+                    <h2 className="font-display text-xl font-bold mb-4 flex items-center gap-2">
+                      <span className="text-red-500">⚠️</span>
+                      Acciones prioritarias ({errorChecks.length})
+                    </h2>
+                    <ul className="space-y-2 text-sm">
+                      {errorChecks.slice(0, 6).map((check, idx) => (
+                        <li key={idx} className="flex items-start gap-2">
+                          <span className="text-red-500 font-bold">{idx + 1}.</span>
+                          <span>{check.message}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null;
+              })()}
 
-              {/* Category Sections */}
-              <div className="space-y-6">
-                {mockAnalysisData.categories.map((category, idx) => (
-                  <CategorySection
-                    key={idx}
-                    title={category.title}
-                    description={category.description}
-                    icon={category.icon}
-                    subcategories={category.subcategories}
-                    defaultOpen={idx === 0}
-                  />
-                ))}
-              </div>
+              {/* Category Sections - Render real analysis data */}
+              {displayData.categories && typeof displayData.categories === 'object' && !Array.isArray(displayData.categories) ? (
+                <div className="space-y-6">
+                  {/* Technical SEO */}
+                  {displayData.categories.technical && (
+                    <CategorySection
+                      title={displayData.categories.technical.title}
+                      description="Verificación de SSL, indexación, meta tags, y estructura técnica"
+                      icon={<Code className="w-6 h-6" />}
+                      subcategories={[{
+                        title: "Análisis técnico",
+                        checks: displayData.categories.technical.checks.map((check: any) => ({
+                          title: check.name,
+                          message: check.message,
+                          status: check.status,
+                        }))
+                      }]}
+                      defaultOpen={true}
+                    />
+                  )}
+                  
+                  {/* Analytics */}
+                  {displayData.categories.analytics && (
+                    <CategorySection
+                      title={displayData.categories.analytics.title}
+                      description="Google Analytics, Tag Manager, Facebook Pixel y datos estructurados"
+                      icon={<TrendingUp className="w-6 h-6" />}
+                      subcategories={[{
+                        title: "Herramientas de tracking",
+                        checks: displayData.categories.analytics.checks.map((check: any) => ({
+                          title: check.name,
+                          message: check.message,
+                          status: check.status,
+                        }))
+                      }]}
+                      defaultOpen={false}
+                    />
+                  )}
+                  
+                  {/* Legal/GDPR */}
+                  {displayData.categories.legal && (
+                    <CategorySection
+                      title={displayData.categories.legal.title}
+                      description="Cumplimiento RGPD, cookies, privacidad y avisos legales"
+                      icon={<FileText className="w-6 h-6" />}
+                      subcategories={[{
+                        title: "Requisitos legales",
+                        checks: displayData.categories.legal.checks.map((check: any) => ({
+                          title: check.name,
+                          message: check.message,
+                          status: check.status,
+                        }))
+                      }]}
+                      defaultOpen={false}
+                    />
+                  )}
+                </div>
+              ) : displayData.categories && Array.isArray(displayData.categories) ? (
+                <div className="space-y-6">
+                  {displayData.categories.map((category: any, idx: number) => (
+                    <CategorySection
+                      key={idx}
+                      title={category.title}
+                      description={category.description}
+                      icon={category.icon}
+                      subcategories={category.subcategories}
+                      defaultOpen={idx === 0}
+                    />
+                  ))}
+                </div>
+              ) : null}
 
               {/* CTA Section */}
               <div className="mt-12 bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 rounded-xl p-8 text-center">
