@@ -31,6 +31,18 @@ export const seoAnalysis = mysqlTable("seo_analysis", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const projects = mysqlTable("projects", {
+  id: int("id").primaryKey().autoincrement(),
+  title: varchar("title", { length: 255 }).notNull(),
+  category: varchar("category", { length: 100 }).notNull(),
+  description: text("description").notNull(),
+  imagePath: varchar("image_path", { length: 500 }).notNull(),
+  externalLink: varchar("external_link", { length: 500 }),
+  displayOrder: int("display_order").notNull().default(0),
+  isActive: tinyint("is_active").notNull().default(1),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const insertContactSchema = createInsertSchema(contacts).omit({
   id: true,
   createdAt: true,
@@ -48,6 +60,11 @@ export const insertSeoAnalysisSchema = createInsertSchema(seoAnalysis).omit({
   contacted: true,
 });
 
+export const insertProjectSchema = createInsertSchema(projects).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type InsertContact = z.infer<typeof insertContactSchema>;
 export type Contact = typeof contacts.$inferSelect;
 
@@ -56,3 +73,6 @@ export type ContactMessage = typeof contactMessages.$inferSelect;
 
 export type InsertSeoAnalysis = z.infer<typeof insertSeoAnalysisSchema>;
 export type SeoAnalysis = typeof seoAnalysis.$inferSelect;
+
+export type InsertProject = z.infer<typeof insertProjectSchema>;
+export type Project = typeof projects.$inferSelect;
