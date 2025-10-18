@@ -24,6 +24,12 @@ const mockAnalysisData = {
           title: "Rastreo e indexación",
           checks: [
             {
+              title: "Páginas indexadas en Google",
+              message: "Google solo tiene indexadas 3 de las 47 páginas de tu sitio. Hay un problema grave de indexación.",
+              status: "error" as const,
+              solution: "Verifica en Search Console los errores de rastreo, revisa robots.txt y asegúrate de que las páginas no tengan noindex. Envía el sitemap y solicita reindexación.",
+            },
+            {
               title: "robots.txt",
               message: "No hemos encontrado tu archivo robots.txt. Los buscadores no tienen instrucciones de rastreo.",
               status: "error" as const,
@@ -329,23 +335,27 @@ export default function AnalizaTuWeb() {
                 <ul className="space-y-2 text-sm">
                   <li className="flex items-start gap-2">
                     <span className="text-red-500 font-bold">1.</span>
-                    <span>Crear archivo robots.txt y sitemap.xml</span>
+                    <span>Resolver problema de indexación: solo 3 de 47 páginas están en Google</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-red-500 font-bold">2.</span>
-                    <span>Implementar banner de consentimiento de cookies (RGPD)</span>
+                    <span>Crear archivo robots.txt y sitemap.xml</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-red-500 font-bold">3.</span>
-                    <span>Instalar Google Analytics 4 y configurar eventos de conversión</span>
+                    <span>Implementar banner de consentimiento de cookies (RGPD)</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-red-500 font-bold">4.</span>
-                    <span>Optimizar velocidad de carga (Core Web Vitals)</span>
+                    <span>Instalar Google Analytics 4 y configurar eventos de conversión</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-red-500 font-bold">5.</span>
-                    <span>Añadir Schema LocalBusiness</span>
+                    <span>Optimizar velocidad de carga (Core Web Vitals)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-red-500 font-bold">6.</span>
+                    <span>Añadir Schema LocalBusiness para negocio local</span>
                   </li>
                 </ul>
               </div>
