@@ -13,11 +13,11 @@ setInterval(() => {
   const now = Date.now();
   const THIRTY_MINUTES = 30 * 60 * 1000;
   
-  for (const [token, data] of tokenStore.entries()) {
+  Array.from(tokenStore.entries()).forEach(([token, data]) => {
     if (now - data.timestamp > THIRTY_MINUTES) {
       tokenStore.delete(token);
     }
-  }
+  });
 }, 30 * 60 * 1000);
 
 /**

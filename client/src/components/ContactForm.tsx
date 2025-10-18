@@ -1,42 +1,83 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Mail, User, MessageSquare } from "lucide-react";
-import { useState } from "react";
+import { Mail, User, MessageSquare, Phone } from "lucide-react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useMutation } from "@tanstack/react-query";
 
 export default function ContactForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [antispamData, setAntispamData] = useState<{ token: string; timestamp: number } | null>(null);
   const { toast } = useToast();
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+  // Obtener token antispam al cargar el componente
+  useEffect(() => {
+    fetch('/api/contact/token')
+      .then(res => res.json())
+      .then(data => setAntispamData(data))
+      .catch(err => console.error('Error getting antispam token:', err));
+  }, []);
 
-    const formData = new FormData(e.currentTarget);
-    const data = {
-      name: formData.get("name"),
-      email: formData.get("email"),
-      message: formData.get("message"),
-    };
-
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+  const contactMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || 'Error al enviar');
+      }
+      return res.json();
+    },
+    onSuccess: () => {
       toast({
         title: "¡Mensaje enviado!",
         description: "Nos pondremos en contacto contigo pronto.",
       });
-      
-      (e.target as HTMLFormElement).reset();
-    } catch (error) {
+      // Obtener nuevo token
+      fetch('/api/contact/token')
+        .then(res => res.json())
+        .then(data => setAntispamData(data));
+    },
+    onError: (error: Error) => {
       toast({
         title: "Error",
-        description: "Hubo un problema al enviar el mensaje. Inténtalo de nuevo.",
+        description: error.message || "Hubo un problema al enviar el mensaje. Inténtalo de nuevo.",
         variant: "destructive",
       });
-    } finally {
-      setIsSubmitting(false);
+    },
+  });
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    
+    if (!antispamData) {
+      toast({
+        title: "Error",
+        description: "Por favor recarga la página e intenta de nuevo.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const formData = new FormData(e.currentTarget);
+    const data = {
+      name: formData.get("name") as string,
+      email: formData.get("email") as string,
+      phone: formData.get("phone") as string,
+      message: formData.get("message") as string,
+      // Antispam data (invisible para el usuario)
+      token: antispamData.token,
+      timestamp: antispamData.timestamp,
+      honeypot: formData.get("website") as string, // Campo trampa invisible
+    };
+
+    await contactMutation.mutateAsync(data);
+    if (contactMutation.isSuccess) {
+      (e.target as HTMLFormElement).reset();
     }
   };
 
@@ -88,6 +129,21 @@ export default function ContactForm() {
           </div>
 
           <div className="space-y-2">
+            <label htmlFor="phone" className="text-sm font-medium flex items-center gap-2">
+              <Phone className="w-4 h-4 text-primary" />
+              Teléfono (opcional)
+            </label>
+            <Input
+              id="phone"
+              name="phone"
+              type="tel"
+              placeholder="+34 600 00 00 00"
+              data-testid="input-phone"
+              className="h-12"
+            />
+          </div>
+
+          <div className="space-y-2">
             <label htmlFor="message" className="text-sm font-medium flex items-center gap-2">
               <MessageSquare className="w-4 h-4 text-primary" />
               Mensaje
@@ -102,15 +158,27 @@ export default function ContactForm() {
             />
           </div>
 
+          {/* Honeypot - Campo invisible para atrapar bots */}
+          <div style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px', overflow: 'hidden' }} aria-hidden="true">
+            <label htmlFor="website">Website (dejar en blanco)</label>
+            <input
+              type="text"
+              id="website"
+              name="website"
+              tabIndex={-1}
+              autoComplete="off"
+            />
+          </div>
+
           <div className="text-center">
             <Button
               type="submit"
               size="lg"
-              disabled={isSubmitting}
+              disabled={contactMutation.isPending || !antispamData}
               data-testid="button-submit"
               className="px-8 py-6 text-lg"
             >
-              {isSubmitting ? "Enviando..." : "Enviar mensaje"}
+              {contactMutation.isPending ? "Enviando..." : "Enviar mensaje"}
             </Button>
           </div>
         </form>
