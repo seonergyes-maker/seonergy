@@ -13,10 +13,11 @@ export default function Header({ onMenuToggle, isMenuOpen }: HeaderProps) {
       <div className="absolute inset-0 bg-background/80 backdrop-blur-lg border-b border-border" />
       <div className="relative h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
         <div className="flex items-center">
-          <span className="font-display text-2xl font-bold tracking-tight">
-            <span className="text-primary">Se</span>
-            <span className="text-foreground">onergy</span>
-          </span>
+          <img 
+            src="/logo.svg" 
+            alt="Seonergy" 
+            className="h-7 w-auto"
+          />
         </div>
 
         <Button

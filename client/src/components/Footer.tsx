@@ -7,10 +7,11 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
           <div>
             <div className="mb-6">
-              <span className="font-display text-2xl font-bold tracking-tight">
-                <span className="text-primary">Se</span>
-                <span className="text-foreground">onergy</span>
-              </span>
+              <img 
+                src="/logo.svg" 
+                alt="Seonergy" 
+                className="h-7 w-auto"
+              />
             </div>
             <p className="text-muted-foreground mb-6 leading-relaxed">
               Transformamos ideas en experiencias digitales extraordinarias.
