@@ -39,9 +39,9 @@ export default function CookieBanner() {
                 Utilizamos cookies para mejorar tu experiencia de navegación y analizar el tráfico del sitio. 
                 Al hacer clic en "Aceptar", consientes el uso de todas las cookies.{" "}
                 <Link href="/politica-privacidad">
-                  <a className="text-primary hover:underline">
+                  <span className="text-primary hover:underline cursor-pointer">
                     Más información
-                  </a>
+                  </span>
                 </Link>
               </p>
             </div>
