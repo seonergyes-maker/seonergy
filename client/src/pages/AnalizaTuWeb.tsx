@@ -1,8 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Globe, User, Mail, Search, Code, TrendingUp, FileText, ArrowLeft, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useLocation } from "wouter";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import ScoreCard from "@/components/seo/ScoreCard";
 import CategorySection from "@/components/seo/CategorySection";
 
@@ -177,12 +180,54 @@ const mockAnalysisData = {
 };
 
 export default function AnalizaTuWeb() {
+  const [, setLocation] = useLocation();
   const [showResults, setShowResults] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [currentAnalysisId, setCurrentAnalysisId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     website: "",
     name: "",
     email: "",
+  });
+
+  // Check if there's a hash in the URL
+  useEffect(() => {
+    const hash = window.location.hash.slice(1);
+    if (hash) {
+      setCurrentAnalysisId(hash);
+    }
+  }, []);
+
+  // Load analysis if ID exists
+  const { data: loadedAnalysis, isLoading: isLoadingAnalysis } = useQuery({
+    queryKey: ['/api/seo-analysis', currentAnalysisId],
+    enabled: !!currentAnalysisId && !showResults,
+  });
+
+  useEffect(() => {
+    if (loadedAnalysis && !showResults) {
+      setShowResults(true);
+      setFormData({
+        website: loadedAnalysis.website,
+        name: loadedAnalysis.name,
+        email: loadedAnalysis.email,
+      });
+    }
+  }, [loadedAnalysis, showResults]);
+
+  // Save analysis mutation
+  const saveAnalysisMutation = useMutation({
+    mutationFn: async (data: any) => {
+      return await apiRequest('/api/seo-analysis', {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: { 'Content-Type': 'application/json' },
+      });
+    },
+    onSuccess: (data) => {
+      setCurrentAnalysisId(data.uniqueId);
+      window.location.hash = data.uniqueId;
+    },
   });
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -192,13 +237,27 @@ export default function AnalizaTuWeb() {
     // Simular análisis
     await new Promise(resolve => setTimeout(resolve, 3000));
     
+    // Generate unique ID
+    const uniqueId = Date.now().toString(36) + Math.random().toString(36).substr(2);
+    
+    // Save to database
+    await saveAnalysisMutation.mutateAsync({
+      uniqueId,
+      website: formData.website,
+      name: formData.name,
+      email: formData.email,
+      results: JSON.stringify(mockAnalysisData),
+    });
+    
     setIsAnalyzing(false);
     setShowResults(true);
   };
 
   const handleReset = () => {
     setShowResults(false);
+    setCurrentAnalysisId(null);
     setFormData({ website: "", name: "", email: "" });
+    window.location.hash = "";
   };
 
   const totalScore = mockAnalysisData.scores.technical.current + 
