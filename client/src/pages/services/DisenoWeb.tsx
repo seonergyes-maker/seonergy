@@ -33,21 +33,35 @@ export default function DisenoWeb() {
 
   return (
     <div className="pt-20 min-h-screen">
-      <section className="py-20 md:py-32 px-4 sm:px-6 lg:px-8 relative overflow-hidden bg-gradient-to-br from-background via-background to-primary/5">
-        <div className="max-w-5xl mx-auto text-center relative z-10">
+      <section className="relative h-screen w-full overflow-hidden">
+        <div className="absolute inset-0 bg-black">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-full object-cover"
+          >
+            <source src="https://videos.pexels.com/video-files/3130284/3130284-uhd_2560_1440_30fps.mp4" type="video/mp4" />
+          </video>
+          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/80" />
+        </div>
+
+        <div className="relative h-full flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 text-center">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
+            className="max-w-5xl"
           >
-            <Badge variant="outline" className="mb-6">
+            <Badge variant="outline" className="mb-6 bg-white/10 backdrop-blur-md border-white/20 text-white">
               <Palette className="w-3 h-3 mr-2" />
               Diseño Web
             </Badge>
-            <h1 className="font-display text-5xl md:text-7xl font-bold tracking-tight mb-6">
+            <h1 className="font-display text-5xl md:text-7xl font-bold tracking-tight mb-6 text-white">
               Diseño web que convierte visitas en clientes
             </h1>
-            <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
+            <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
               Sitios rápidos, claros y preparados para SEO y anuncios desde el día uno.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -58,7 +72,7 @@ export default function DisenoWeb() {
                 </Button>
               </Link>
               <Link href="/proyectos">
-                <Button size="lg" variant="outline" data-testid="button-ver-ejemplos">
+                <Button size="lg" variant="outline" className="bg-white/10 backdrop-blur-md border-white/20 text-white hover:bg-white/20" data-testid="button-ver-ejemplos">
                   Ver ejemplos
                 </Button>
               </Link>

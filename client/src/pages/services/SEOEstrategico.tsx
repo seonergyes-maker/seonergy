@@ -33,21 +33,35 @@ export default function SEOEstrategico() {
 
   return (
     <div className="pt-20 min-h-screen">
-      <section className="py-20 md:py-32 px-4 sm:px-6 lg:px-8 relative overflow-hidden bg-gradient-to-br from-background via-background to-chart-2/5">
-        <div className="max-w-5xl mx-auto text-center relative z-10">
+      <section className="relative h-screen w-full overflow-hidden">
+        <div className="absolute inset-0 bg-black">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-full object-cover"
+          >
+            <source src="https://videos.pexels.com/video-files/3141206/3141206-uhd_2560_1440_30fps.mp4" type="video/mp4" />
+          </video>
+          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/80" />
+        </div>
+
+        <div className="relative h-full flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 text-center">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
+            className="max-w-5xl"
           >
-            <Badge variant="outline" className="mb-6">
+            <Badge variant="outline" className="mb-6 bg-white/10 backdrop-blur-md border-white/20 text-white">
               <TrendingUp className="w-3 h-3 mr-2" />
               SEO Estratégico
             </Badge>
-            <h1 className="font-display text-5xl md:text-7xl font-bold tracking-tight mb-6">
+            <h1 className="font-display text-5xl md:text-7xl font-bold tracking-tight mb-6 text-white">
               SEO que impacta en ventas, no solo en rankings
             </h1>
-            <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
+            <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
               Estrategia SEO integral: técnico, contenidos y local con objetivos medibles.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -58,7 +72,7 @@ export default function SEOEstrategico() {
                 </Button>
               </Link>
               <Link href="/proceso">
-                <Button size="lg" variant="outline" data-testid="button-ver-metodologia">
+                <Button size="lg" variant="outline" className="bg-white/10 backdrop-blur-md border-white/20 text-white hover:bg-white/20" data-testid="button-ver-metodologia">
                   Ver metodología
                 </Button>
               </Link>
