@@ -1,4 +1,22 @@
+import { useEffect } from "react";
+
 export default function PoliticaPrivacidad() {
+  useEffect(() => {
+    document.title = "Política de Privacidad | Seonergy - Protección de Datos";
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription) {
+      metaDescription.setAttribute('content', 'Política de privacidad y protección de datos de Seonergy. Conoce cómo tratamos tu información personal conforme al RGPD y legislación española vigente.');
+    }
+    
+    let metaKeywords = document.querySelector('meta[name="keywords"]');
+    if (!metaKeywords) {
+      metaKeywords = document.createElement('meta');
+      metaKeywords.setAttribute('name', 'keywords');
+      document.head.appendChild(metaKeywords);
+    }
+    metaKeywords.setAttribute('content', 'política privacidad, protección datos, rgpd, privacidad web, tratamiento datos personales');
+  }, []);
+
   return (
     <div className="pt-20 min-h-screen">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">

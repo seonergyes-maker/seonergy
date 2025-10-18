@@ -180,6 +180,22 @@ const mockAnalysisData = {
 };
 
 export default function AnalizaTuWeb() {
+  useEffect(() => {
+    document.title = "Análisis SEO Gratuito | Auditoría Web Completa - Seonergy";
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription) {
+      metaDescription.setAttribute('content', 'Analiza tu web gratis con nuestra herramienta SEO. Auditoría técnica completa, análisis de velocidad, SEO on-page y recomendaciones personalizadas para mejorar tu posicionamiento.');
+    }
+    
+    let metaKeywords = document.querySelector('meta[name="keywords"]');
+    if (!metaKeywords) {
+      metaKeywords = document.createElement('meta');
+      metaKeywords.setAttribute('name', 'keywords');
+      document.head.appendChild(metaKeywords);
+    }
+    metaKeywords.setAttribute('content', 'análisis seo gratis, auditoría web gratuita, herramienta seo, análisis web, auditoría seo online, analizar página web, seo checker');
+  }, []);
+
   const [, setLocation] = useLocation();
   const [showResults, setShowResults] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
