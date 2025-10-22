@@ -240,7 +240,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Create project with image (admin only)
-  app.post("/api/admin/projects/create", checkAdminAuth, upload.single('image'), async (req: Request, res: Response) => {
+  app.post("/api/admin/projects/create", upload.single('image'), checkAdminAuth, async (req: Request, res: Response) => {
     try {
       if (!req.file) {
         return res.status(400).json({ error: "Se requiere una imagen" });
@@ -276,7 +276,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update project (admin only)
-  app.patch("/api/admin/projects/:id", checkAdminAuth, upload.single('image'), async (req: Request, res: Response) => {
+  app.patch("/api/admin/projects/:id", upload.single('image'), checkAdminAuth, async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
       const { title, category, description, externalLink, displayOrder, isActive } = req.body;
