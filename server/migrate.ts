@@ -53,15 +53,15 @@ async function runMigrations() {
       console.log('[Migration] contact_messages table already exists');
     }
 
-    // Check if projects table exists
-    const [projectsTables] = await connection.query(
-      "SHOW TABLES LIKE 'projects'"
+    // Check if projects_seoweb table exists
+    const [projectsSeowebTables] = await connection.query(
+      "SHOW TABLES LIKE 'projects_seoweb'"
     );
     
-    if ((projectsTables as any[]).length === 0) {
-      console.log('[Migration] Creating projects table...');
+    if ((projectsSeowebTables as any[]).length === 0) {
+      console.log('[Migration] Creating projects_seoweb table...');
       await connection.query(`
-        CREATE TABLE projects (
+        CREATE TABLE projects_seoweb (
           id INT PRIMARY KEY AUTO_INCREMENT,
           title VARCHAR(255) NOT NULL,
           category VARCHAR(100) NOT NULL,
@@ -73,9 +73,9 @@ async function runMigrations() {
           created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
         )
       `);
-      console.log('[Migration] ✓ projects table created');
+      console.log('[Migration] ✓ projects_seoweb table created');
     } else {
-      console.log('[Migration] projects table already exists');
+      console.log('[Migration] projects_seoweb table already exists');
     }
 
     console.log('[Migration] All migrations completed successfully');
