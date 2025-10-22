@@ -1,7 +1,7 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { db } from "./db";
-import { seoAnalysis, contactMessages, projects } from "@shared/schema";
+import { seoAnalysis, contactMessages, projectsSeoweb } from "@shared/schema";
 import { insertSeoAnalysisSchema, insertContactMessageSchema, insertProjectSchema } from "@shared/schema";
 import { eq, desc } from "drizzle-orm";
 import { analyzeSEO } from "./seo-analyzer";
@@ -215,9 +215,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const projectsList = await db
         .select()
-        .from(projects)
-        .where(eq(projects.isActive, 1))
-        .orderBy(projects.displayOrder);
+        .from(projectsSeoweb)
+        .where(eq(projectsSeoweb.isActive, 1))
+        .orderBy(projectsSeoweb.displayOrder);
       
       res.json(projectsList);
     } catch (error: any) {
@@ -230,8 +230,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const projectsList = await db
         .select()
-        .from(projects)
-        .orderBy(projects.displayOrder);
+        .from(projectsSeoweb)
+        .orderBy(projectsSeoweb.displayOrder);
       
       res.json(projectsList);
     } catch (error: any) {
@@ -259,11 +259,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isActive: isActive === 'true' || isActive === '1' ? 1 : 0,
       };
 
-      const [result] = await db.insert(projects).values(projectData);
+      const [result] = await db.insert(projectsSeoweb).values(projectData);
       const [newProject] = await db
         .select()
-        .from(projects)
-        .where(eq(projects.id, result.insertId));
+        .from(projectsSeoweb)
+        .where(eq(projectsSeoweb.id, result.insertId));
       
       res.json(newProject);
     } catch (error: any) {
@@ -283,8 +283,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const [existingProject] = await db
         .select()
-        .from(projects)
-        .where(eq(projects.id, id));
+        .from(projectsSeoweb)
+        .where(eq(projectsSeoweb.id, id));
 
       if (!existingProject) {
         return res.status(404).json({ error: "Proyecto no encontrado" });
@@ -306,14 +306,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       await db
-        .update(projects)
+        .update(projectsSeoweb)
         .set(updateData)
-        .where(eq(projects.id, id));
+        .where(eq(projectsSeoweb.id, id));
 
       const [updatedProject] = await db
         .select()
-        .from(projects)
-        .where(eq(projects.id, id));
+        .from(projectsSeoweb)
+        .where(eq(projectsSeoweb.id, id));
       
       res.json(updatedProject);
     } catch (error: any) {
@@ -332,8 +332,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const [project] = await db
         .select()
-        .from(projects)
-        .where(eq(projects.id, id));
+        .from(projectsSeoweb)
+        .where(eq(projectsSeoweb.id, id));
 
       if (!project) {
         return res.status(404).json({ error: "Proyecto no encontrado" });
@@ -343,8 +343,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await fs.unlink(imagePath).catch(() => {});
 
       await db
-        .delete(projects)
-        .where(eq(projects.id, id));
+        .delete(projectsSeoweb)
+        .where(eq(projectsSeoweb.id, id));
       
       res.json({ success: true });
     } catch (error: any) {

@@ -31,7 +31,7 @@ export const seoAnalysis = mysqlTable("seo_analysis", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export const projects = mysqlTable("projects", {
+export const projectsSeoweb = mysqlTable("projects_seoweb", {
   id: int("id").primaryKey().autoincrement(),
   title: varchar("title", { length: 255 }).notNull(),
   category: varchar("category", { length: 100 }).notNull(),
@@ -60,7 +60,7 @@ export const insertSeoAnalysisSchema = createInsertSchema(seoAnalysis).omit({
   contacted: true,
 });
 
-export const insertProjectSchema = createInsertSchema(projects).omit({
+export const insertProjectSchema = createInsertSchema(projectsSeoweb).omit({
   id: true,
   createdAt: true,
 });
@@ -75,4 +75,4 @@ export type InsertSeoAnalysis = z.infer<typeof insertSeoAnalysisSchema>;
 export type SeoAnalysis = typeof seoAnalysis.$inferSelect;
 
 export type InsertProject = z.infer<typeof insertProjectSchema>;
-export type Project = typeof projects.$inferSelect;
+export type Project = typeof projectsSeoweb.$inferSelect;
